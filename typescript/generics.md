@@ -589,3 +589,125 @@ console.log(upper); // { a: "HELLO", b: "WORLD" }
 | typeof                | `typeof variable`               | `type User = typeof user`  |
 
 ---
+
+# Conditional Types и infer в TypeScript (кратко)
+
+## Conditional Types (Условные типы)
+
+```typescript
+// Синтаксис: T extends U ? X : Y
+
+type IsString<T> = T extends string ? true : false;
+
+type R1 = IsString<"hello">; // true
+type R2 = IsString<42>; // false
+
+// С несколькими условиями
+type TypeName<T> = T extends string ? "string" : T extends number ? "number" : T extends boolean ? "boolean" : "other";
+
+// Распределение по union (дистрибутивность)
+type ToArray<T> = T extends any ? T[] : never;
+type R3 = ToArray<string | number>; // string[] | number[]
+
+// Отключение распределения (через кортеж)
+type ToArrayNonDistributive<T> = [T] extends [any] ? T[] : never;
+type R4 = ToArrayNonDistributive<string | number>; // (string | number)[]
+```
+
+### Встроенные условные типы
+
+```typescript
+type T1 = Exclude<"a" | "b" | "c", "a" | "b">; // "c"
+type T2 = Extract<"a" | "b" | "c", "a" | "b">; // "a" | "b"
+type T3 = NonNullable<string | null | undefined>; // string
+type T4 = ReturnType<() => string>; // string
+type T5 = Parameters<(a: number, b: string) => void>; // [number, string]
+```
+
+---
+
+## infer
+
+```typescript
+// infer — достаёт тип изнутри другого типа (работает только в conditional type)
+
+// Достать тип элемента массива
+type GetArrayItem<T> = T extends Array<infer U> ? U : never;
+
+type R1 = GetArrayItem<number[]>; // number
+type R2 = GetArrayItem<string[]>; // string
+
+// Достать тип из Promise
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
+
+type R3 = UnwrapPromise<Promise<string>>; // string
+
+// Рекурсивное разворачивание
+type DeepUnwrapPromise<T> = T extends Promise<infer U> ? DeepUnwrapPromise<U> : T;
+
+type R4 = DeepUnwrapPromise<Promise<Promise<number>>>; // number
+
+// Достать возвращаемый тип функции
+type GetReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+type R5 = GetReturnType<() => string>; // string
+
+// Достать параметры функции
+type GetParams<T> = T extends (...args: infer P) => any ? P : never;
+
+type R6 = GetParams<(a: number, b: string) => void>; // [number, string]
+
+// Достать тип свойства объекта
+type GetPropertyType<T, K> = T extends { [key in K]: infer U } ? U : never;
+
+type User = { id: number; name: string };
+type R7 = GetPropertyType<User, "name">; // string
+```
+
+---
+
+## Комбинация conditional + infer
+
+```typescript
+// MyReturnType — своя реализация
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+// MyParameters — своя реализация
+type MyParameters<T> = T extends (...args: infer P) => any ? P : never;
+
+// Flatten массива
+type Flatten<T> = T extends Array<infer U> ? Flatten<U> : T;
+
+type R1 = Flatten<number[][][]>; // number
+
+// IsUnion — проверка, является ли тип объединением
+type IsUnion<T, U = T> = T extends any ? (U extends T ? false : true) : never;
+
+type R2 = IsUnion<string>; // false
+type R3 = IsUnion<string | number>; // true
+
+// Union в Intersection
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+type R4 = UnionToIntersection<{ a: number } | { b: string }>; // { a: number } & { b: string }
+```
+
+---
+
+## Шпаргалка
+
+| Задача               | Решение                                             |
+| -------------------- | --------------------------------------------------- |
+| Тип элемента массива | `T extends Array<infer U> ? U : never`              |
+| Тип из Promise       | `T extends Promise<infer U> ? U : never`            |
+| ReturnType функции   | `T extends (...args: any[]) => infer R ? R : never` |
+| Параметры функции    | `T extends (...args: infer P) => any ? P : never`   |
+| Исключить тип        | `T extends U ? never : T` (как Exclude)             |
+| Выбрать тип          | `T extends U ? T : never` (как Extract)             |
+
+```typescript
+// Правило запоминания:
+// 1. Conditional type = T extends U ? X : Y
+// 2. infer = "достань тип оттуда"
+// 3. infer работает ТОЛЬКО внутри conditional type
+```
