@@ -1,6 +1,3 @@
-````markdown
-# База знаний JavaScript: вопросы, ответы и практика
-
 ## 1. Какие типы данных существуют в JavaScript?
 
 ```js
@@ -21,6 +18,7 @@ console.log(typeof function () {}); // "function"
 console.log(typeof Symbol("id")); // "symbol"
 console.log(typeof 9007199254740991n); // "bigint"
 ```
+
 ````
 
 ## 2. Явное и неявное преобразование в число, строку и булеан
@@ -324,3 +322,4 @@ console.log(5 + "3"); // "53"
 console.log("5" * "3"); // 15
 console.log("10" / "2"); // 5
 ```
+````
