@@ -1,4 +1,3 @@
-````md
 # Контекст, this, bind/call/apply
 
 ---
@@ -47,6 +46,7 @@ const obj = {
 obj.greet(); // Alice
 obj.greetArrow(); // undefined
 ```
+
 ````
 
 ---
@@ -310,3 +310,4 @@ undefined
 ```
 
 ```
+````
