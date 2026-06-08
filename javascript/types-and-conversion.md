@@ -1,325 +1,615 @@
-## 1. Какие типы данных существуют в JavaScript?
+# Data Types, Type Conversion, References
+
+## Теория (вопросы и ответы)
+
+### Какие типы данных существуют в JavaScript?
+
+В JavaScript существует 8 типов данных.
+
+### Примитивные типы
 
 ```js
-// Примитивные (7):
-// number, string, boolean, undefined, null, symbol, bigint
-// Ссылочные:
-// object (включая массивы, функции, даты, регулярные выражения)
-
-// Пример:
-console.log(typeof 42); // "number"
-console.log(typeof "Hello"); // "string"
-console.log(typeof true); // "boolean"
-console.log(typeof undefined); // "undefined"
-console.log(typeof null); // "object" (историческая ошибка JS)
-console.log(typeof {}); // "object"
-console.log(typeof []); // "object"
-console.log(typeof function () {}); // "function"
-console.log(typeof Symbol("id")); // "symbol"
-console.log(typeof 9007199254740991n); // "bigint"
-```
-
-````
-
-## 2. Явное и неявное преобразование в число, строку и булеан
-
-```js
-// В число
-// Явное:
-Number("123");    // 123
-+"123";           // 123
-parseInt("123");  // 123
-// Неявное:
-"5" * 2;          // 10
-"10" - "5";       // 5
-
-// В строку
-// Явное:
-String(123);      // "123"
-(123).toString(); // "123"
-// Неявное:
-5 + "5";          // "55"
-
-// В булеан
-// Явное:
-Boolean(1);       // true
-!!1;              // true
-// Неявное:
-if (1) {}         // true
-value || default
-```
-
-## 2.5. Какие значения всегда преобразуются в false (falsy)?
-
-```js
-// Все falsy значения в JS:
-false;
-0 - 0;
-0n; // BigInt ноль
-(""); // пустая строка
-null;
+string;
+number;
+boolean;
 undefined;
-NaN;
-
-// Всё остальное — true (включая [], {}, "0", "false")
+null;
+symbol;
+bigint;
 ```
 
-## 3. Что такое NaN?
+### Ссылочный тип
 
 ```js
-// NaN = Not a Number
-// Возникает при некорректной математической операции
-
-console.log(typeof NaN); // "number"
-console.log(NaN === NaN); // false (NaN не равен сам себе)
-console.log(isNaN("abc")); // true
-console.log(Number.isNaN(NaN)); // true (строгая проверка)
-console.log(5 * undefined); // NaN
-console.log(+"123abc"); // NaN
+object;
 ```
 
-## 4. Как работают операторы == и ===?
+К объектам относятся:
+
+- Object
+- Array
+- Function
+- Date
+- Map
+- Set
+- RegExp
+
+Примеры:
 
 ```js
-// ==  — нестрогое равенство (с приведением типов)
-// === — строгое равенство (без приведения)
-
-console.log(5 == "5"); // true
-console.log(5 === "5"); // false
-console.log(null == undefined); // true
-console.log(null === undefined); // false
-console.log(0 == false); // true
-console.log(0 === false); // false
-```
-
-## 5. Что такое ссылки в JavaScript?
-
-```js
-// Примитивы копируются по значению
-// Объекты — по ссылке
-
-let a = { x: 1 };
-let b = a; // b ссылается на тот же объект
-b.x = 2;
-console.log(a.x); // 2
-
-// Пример с перезаписью
-let obj = { x: 10 };
-let ref = obj;
-ref.x = 20;
-obj = { x: 30 };
-console.log(ref.x); // 20 (ref всё ещё указывает на старый объект)
-```
-
-## 6. Что такое поверхностное и глубокое копирование?
-
-```js
-// Поверхностное копирование (shallow clone)
-const original = { a: 1, b: { c: 2 } };
-const shallow = { ...original }; // spread
-const shallow2 = Object.assign({}, original);
-
-// Глубокое копирование (deep clone)
-const deep = structuredClone(original); // современный способ
-// или
-const deepJSON = JSON.parse(JSON.stringify(original));
-
-// Проверка
-original.b.c = 99;
-console.log(shallow.b.c); // 99 (общая ссылка)
-console.log(deep.b.c); // 2 (независим)
-
-// Минусы JSON метода:
-// - не копирует функции, undefined, Symbol
-// - не работает с датами, Map, Set, циклическими ссылками
+typeof 42; // "number"
+typeof "Hello"; // "string"
+typeof true; // "boolean"
+typeof undefined; // "undefined"
+typeof Symbol(); // "symbol"
+typeof 10n; // "bigint"
+typeof {}; // "object"
+typeof []; // "object"
+typeof function () {}; // "function"
 ```
 
 ---
 
-# Практические задачи с решениями
-
-## Задача 1. Определение типа данных (typeof)
+### Почему typeof null возвращает "object"?
 
 ```js
-console.log(typeof 42); // "number"
-console.log(typeof "Hello"); // "string"
-console.log(typeof undefined); // "undefined"
-console.log(typeof null); // "object"
-console.log(typeof {}); // "object"
-console.log(typeof []); // "object"
-console.log(typeof function () {}); // "function"
-console.log(typeof Symbol("id")); // "symbol"
-console.log(typeof 9007199254740991n); // "bigint"
+typeof null; // "object"
 ```
 
-## Задача 2. Ссылки в объектах (easy)
+Это историческая ошибка JavaScript.
+
+Она появилась в первой реализации языка и была сохранена для обратной совместимости.
+
+---
+
+### Что такое явное преобразование типов?
+
+Когда разработчик самостоятельно приводит значение к нужному типу.
+
+Примеры:
 
 ```js
-const user = { name: "Some", age: 22, pet: { nickname: "Gosha", age: 16 } };
-const userTwo = user;
-userTwo.name = "Denis";
-
-console.log(user.name); // "Denis"
-console.log(user === userTwo); // true (один и тот же объект)
+Number("123");
+String(123);
+Boolean(1);
 ```
 
-## Задача 3. Функция изменяет объект
+---
+
+### Что такое неявное преобразование типов?
+
+Когда JavaScript автоматически приводит значения к нужному типу.
+
+Примеры:
 
 ```js
-function getName(person) {
-  person.name = `My name is ${person.name}`;
-  return person.name;
+"5" * 2; // 10
+5 + "5"; // "55"
+```
+
+---
+
+### Как преобразовать значение в число?
+
+Способы:
+
+```js
+Number("123");
++"123";
+parseInt("123");
+parseFloat("12.5");
+```
+
+---
+
+### Как преобразовать значение в строку?
+
+Способы:
+
+```js
+String(123);
+(123).toString();
+```
+
+---
+
+### Как преобразовать значение в boolean?
+
+Способы:
+
+```js
+Boolean(value);
+!!value;
+```
+
+---
+
+### Какие значения являются falsy?
+
+Falsy значения всегда преобразуются в false.
+
+Полный список:
+
+```js
+false;
+0;
+-0;
+0n;
+("");
+null;
+undefined;
+NaN;
+```
+
+---
+
+### Какие значения являются truthy?
+
+Все остальные значения.
+
+Например:
+
+```js
+[];
+{
 }
-
-console.log(getName(user)); // "My name is Denis"
-console.log(user); // { name: "My name is Denis", age: 22, pet: {...} }
+("0");
+("false");
+Infinity;
 ```
 
-## Задача 4. Поверхностное копирование (spread)
+будут преобразованы в true.
+
+---
+
+### Что такое NaN?
+
+NaN означает:
+
+```text
+Not a Number
+```
+
+Возникает при невозможности выполнить математическую операцию.
+
+Примеры:
 
 ```js
-const user = { name: "Some", age: 22, pet: { nickname: "Gosha", age: 16 } };
-const userThree = { ...user };
-user.pet.typeAnimal = "cat";
-
-console.log(user === userThree); // false (разные объекты верхнего уровня)
-console.log(user.pet === userThree.pet); // true (pet — общая ссылка)
-console.log(user.name === userThree.name); // true (строки по значению)
+5 * undefined;
++"abc";
+Math.sqrt(-1);
 ```
 
-## Задача 5. Глубокое копирование (structuredClone)
+---
+
+### Почему NaN === NaN возвращает false?
 
 ```js
-const car = { mark: "Denis", details: { model: "BMW", year: 2020 } };
-const carTwo = structuredClone(car);
-carTwo.details.year = 2024;
-
-console.log(car.details.year === carTwo.details.year); // false
-console.log(car === carTwo); // false
-console.log(car.details === carTwo.details); // false (полностью независимые)
+NaN === NaN; // false
 ```
 
-## Задача 6. Неявное преобразование в строку
+По спецификации NaN не равен ничему, включая самого себя.
+
+---
+
+### Как правильно проверить NaN?
+
+Лучший способ:
 
 ```js
-console.log(5 + "5"); // "55"   (число + строка = строка)
-console.log("10" + 2 * "5"); // "1010" (2*5=10, "10"+10 = "1010")
-console.log(10 + 2 + "5"); // "125"  (10+2=12, 12+"5"="125")
-console.log(10 + "2" + 5); // "1025" (10+"2"="102", "102"+5="1025")
-console.log("10" - "2"); // 8      (строка - строка → число)
-console.log("10" * "2"); // 20
-console.log("10" / "2"); // 5
+Number.isNaN(value);
 ```
 
-## Задача 7. Неявное преобразование в число
+Пример:
 
 ```js
-console.log(+"123"); // 123
-console.log(+" 123 "); // 123 (пробелы игнорируются)
-console.log(+"123abc"); // NaN
-console.log(5 * "5"); // 25
-console.log(5 - true); // 4   (true → 1)
-console.log(5 + false); // 5   (false → 0)
-console.log(5 / null); // Infinity (null → 0)
-console.log(5 * undefined); // NaN
+Number.isNaN(NaN); // true
 ```
 
-## Задача 8. Сравнение == и ===
+---
+
+### Чем отличается isNaN от Number.isNaN?
+
+Плохо:
 
 ```js
-console.log(5 == "5"); // true
-console.log(5 === "5"); // false
-console.log(null == undefined); // true
-console.log(null === undefined); // false
-console.log(0 == false); // true
-console.log(0 === false); // false
+isNaN("abc");
 ```
 
-## Задача 9. Перезапись объекта и ссылки
+Результат:
 
 ```js
-let obj = { x: 10 };
-let ref = obj;
-ref.x = 20;
-obj = { x: 30 };
-
-console.log(ref.x); // 20 (ref не изменился, он ссылается на старый объект)
+true;
 ```
 
-## Задача 10. Перезапись объекта в функции
+Потому что сначала происходит преобразование в число.
+
+Лучше:
 
 ```js
-function updateProfile(user) {
-  user = { name: "Mike" }; // локальная перезапись, не влияет на оригинал
-}
-function process() {
-  let person = { name: "Peter" };
-  updateProfile(person);
-  console.log(person); // { name: "Peter" } (не изменился)
-}
-process();
+Number.isNaN("abc");
 ```
 
-## Задача 11. Замыкание и ссылки
+Результат:
 
 ```js
-function createCounter() {
-  let count = 0;
-  return function () {
-    count++;
-    return count;
-  };
-}
-const counter = createCounter();
-console.log(counter()); // 1
-console.log(counter()); // 2
-// Замыкание сохраняет ссылку на переменную count
+false;
 ```
 
-## Задача 12. Неочевидное сравнение с NaN
+---
+
+### Чем отличается == от ===?
 
 ```js
-console.log(NaN == NaN); // false
-console.log(NaN === NaN); // false
-console.log(isNaN(NaN)); // true
-console.log(Number.isNaN(NaN)); // true
-console.log(isNaN("abc")); // true (сначала приводит к числу)
-console.log(Number.isNaN("abc")); // false (строгая проверка)
+==
 ```
 
-## Задача 13. Сравнение объектов и массивов
+Нестрогое сравнение.
+
+Происходит приведение типов.
 
 ```js
-console.log({} == {}); // false (разные ссылки)
-console.log({} === {}); // false
-console.log([] == []); // false
-console.log([] === []); // false
-console.log([] == ![]); // true  ("" == false → 0 == 0)
+===
 ```
 
-## Задача 14. Опасности поверхностного копирования
+Строгое сравнение.
+
+Приведение типов не выполняется.
+
+Примеры:
+
+```js
+5 == "5"; // true
+5 === "5"; // false
+```
+
+---
+
+### Почему null == undefined возвращает true?
+
+Это специальное правило JavaScript.
+
+```js
+null == undefined; // true
+```
+
+Но:
+
+```js
+null === undefined; // false
+```
+
+---
+
+### Что такое ссылка в JavaScript?
+
+Примитивы копируются по значению.
+
+Объекты копируются по ссылке.
+
+Пример:
+
+```js
+const user = { name: "Maria" };
+
+const copy = user;
+
+copy.name = "Denis";
+
+console.log(user.name);
+```
+
+Результат:
+
+```js
+"Denis";
+```
+
+Потому что обе переменные указывают на один объект.
+
+---
+
+### Что такое поверхностное копирование (Shallow Copy)?
+
+Создается новый объект только верхнего уровня.
+
+Вложенные объекты остаются общими.
+
+Пример:
+
+```js
+const clone = { ...obj };
+```
+
+или
+
+```js
+Object.assign({}, obj);
+```
+
+---
+
+### Что такое глубокое копирование (Deep Copy)?
+
+Создаются новые копии всех вложенных объектов.
+
+Современный способ:
+
+```js
+structuredClone(obj);
+```
+
+---
+
+### Почему JSON.parse(JSON.stringify()) считается плохим способом глубокого копирования?
+
+Потому что теряются:
+
+```js
+function
+undefined
+symbol
+Date
+Map
+Set
+```
+
+Также не поддерживаются циклические ссылки.
+
+---
+
+## Практические вопросы собеседований
+
+### Что выведет код?
+
+```js
+console.log(typeof null);
+```
+
+Ответ:
+
+```js
+"object";
+```
+
+Историческая ошибка JavaScript.
+
+---
+
+### Что выведет код?
+
+```js
+console.log(typeof []);
+```
+
+Ответ:
+
+```js
+"object";
+```
+
+Массивы являются объектами.
+
+---
+
+### Что выведет код?
+
+```js
+console.log(typeof function () {});
+```
+
+Ответ:
+
+```js
+"function";
+```
+
+---
+
+### Что выведет код?
+
+```js
+console.log(5 + "5");
+```
+
+Ответ:
+
+```js
+"55";
+```
+
+Оператор + выполняет конкатенацию строк.
+
+---
+
+### Что выведет код?
+
+```js
+console.log("10" - "5");
+```
+
+Ответ:
+
+```js
+5;
+```
+
+Оба значения будут преобразованы в числа.
+
+---
+
+### Что выведет код?
+
+```js
+console.log(+"123");
+```
+
+Ответ:
+
+```js
+123;
+```
+
+Унарный плюс приводит строку к числу.
+
+---
+
+### Что выведет код?
+
+```js
+console.log(+"123abc");
+```
+
+Ответ:
+
+```js
+NaN;
+```
+
+---
+
+### Что выведет код?
+
+```js
+console.log(5 == "5");
+console.log(5 === "5");
+```
+
+Ответ:
+
+```js
+true;
+false;
+```
+
+---
+
+### Что выведет код?
+
+```js
+console.log(null == undefined);
+console.log(null === undefined);
+```
+
+Ответ:
+
+```js
+true;
+false;
+```
+
+---
+
+### Что выведет код?
+
+```js
+console.log(0 == false);
+console.log(0 === false);
+```
+
+Ответ:
+
+```js
+true;
+false;
+```
+
+---
+
+### Что выведет код?
+
+```js
+const user = { name: "Maria" };
+
+const copy = user;
+
+copy.name = "Denis";
+
+console.log(user.name);
+```
+
+Ответ:
+
+```js
+"Denis";
+```
+
+Обе переменные содержат ссылку на один объект.
+
+---
+
+### Что выведет код?
 
 ```js
 const obj1 = { a: { b: 1 } };
-const obj2 = { ...obj1 };
-obj2.a.b = 999;
-console.log(obj1.a.b); // 999 (так как a — общая ссылка)
 
-// Правильное глубокое копирование:
-const obj3 = structuredClone(obj1);
-obj3.a.b = 777;
-console.log(obj1.a.b); // 999 (не изменилось)
+const obj2 = { ...obj1 };
+
+obj2.a.b = 999;
+
+console.log(obj1.a.b);
 ```
 
-## Задача 15. Преобразование через плюс и минус
+Ответ:
 
 ```js
-console.log(+"5" + +"3"); // 8 (оба стали числами)
-console.log("5" - "3"); // 2
-console.log("5" + "3"); // "53"
-console.log("5" - 3); // 2
-console.log(5 + "3"); // "53"
-console.log("5" * "3"); // 15
-console.log("10" / "2"); // 5
+999;
 ```
-````
+
+Spread выполняет только поверхностное копирование.
+
+---
+
+### Что выведет код?
+
+```js
+console.log(NaN === NaN);
+```
+
+Ответ:
+
+```js
+false;
+```
+
+---
+
+### Что выведет код?
+
+```js
+console.log({} === {});
+console.log([] === []);
+```
+
+Ответ:
+
+```js
+false;
+false;
+```
+
+Это разные объекты в памяти.
+
+---
+
+### Что выведет код?
+
+```js
+let obj = { x: 10 };
+
+let ref = obj;
+
+ref.x = 20;
+
+obj = { x: 30 };
+
+console.log(ref.x);
+```
+
+Ответ:
+
+```js
+20;
+```
+
+Переменная ref продолжает ссылаться на старый объект.
