@@ -2,10 +2,6 @@
 
 ---
 
-# ❓ Вопросы и ответы
-
----
-
 ## 1. Что такое контекст (this) в JavaScript?
 
 **Ответ:**
@@ -46,8 +42,6 @@ const obj = {
 obj.greet(); // Alice
 obj.greetArrow(); // undefined
 ```
-
-````
 
 ---
 
@@ -310,4 +304,7 @@ undefined
 ```
 
 ```
-````
+
+```
+
+```
