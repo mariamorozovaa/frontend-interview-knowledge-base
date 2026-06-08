@@ -301,6 +301,293 @@ async function getUsers() {
 
 ---
 
+## 7. Event Loop: рекурсия микротасок
+
+```js
+// Что будет, если произойдет рекурсия микротасок?
+
+// ========== Пример 1: Обычная рекурсия ==========
+function normalRecursion() {
+  normalRecursion();
+}
+// normalRecursion(); // RangeError: Maximum call stack size exceeded
+// Call Stack переполняется → ошибка
+
+// ========== Пример 2: Рекурсия микротасок ==========
+let count = 0;
+function microRecursion() {
+  queueMicrotask(() => {
+    count++;
+    console.log(count);
+    microRecursion(); // Запускаем новую микротаску
+  });
+}
+// microRecursion(); // ОСТОРОЖНО! Браузер зависнет!
+
+// Что происходит:
+// 1. Выполняется синхронный код
+// 2. В очередь микротасок попадает первая задача
+// 3. Event Loop берет микротаску, она создает НОВУЮ микротаску
+// 4. Новая микротаска попадает в ту же очередь микротасок
+// 5. Event Loop продолжает брать микротаски БЕСКОНЕЧНО
+// 6. Макротаски (setTimeout, рендеринг) НИКОГДА не выполняются
+// 7. Страница зависает
+
+// ========== Пример 3: Рекурсия макротасок (безопасно) ==========
+function macroRecursion() {
+  setTimeout(() => {
+    count++;
+    console.log(count);
+    macroRecursion(); // Запускаем новую макротаску
+  }, 0);
+}
+// macroRecursion(); // БЕЗОПАСНО! Страница не зависает.
+
+// Что происходит:
+// 1. Выполняется синхронный код
+// 2. Макротаска попадает в очередь макротасок
+// 3. Event Loop берет ОДНУ макротаску
+// 4. После нее выполняются ВСЕ микротаски и РЕНДЕРИНГ
+// 5. Потом берется следующая макротаска
+// 6. Страница отзывчивая, анимации работают
+
+// Итог: рекурсия микротасок — смертельная для страницы
+//       рекурсия макротасок — безопасна (но бесконечна)
+```
+
+---
+
+## 8. Для чего нужен async/await?
+
+```js
+// async/await — синтаксический сахар над Promise.
+// Делает асинхронный код похожим на синхронный.
+
+// ========== Без async/await (цепочки then) ==========
+function getUserData() {
+  return fetch("/api/user")
+    .then((response) => response.json())
+    .then((user) => fetch(`/api/posts/${user.id}`))
+    .then((response) => response.json())
+    .then((posts) => {
+      console.log(posts);
+      return posts;
+    })
+    .catch((error) => console.error(error));
+}
+
+// ========== С async/await (чище и понятнее) ==========
+async function getUserData() {
+  try {
+    const userResponse = await fetch("/api/user");
+    const user = await userResponse.json();
+
+    const postsResponse = await fetch(`/api/posts/${user.id}`);
+    const posts = await postsResponse.json();
+
+    console.log(posts);
+    return posts;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// ========== async превращает функцию в Promise ==========
+async function getNumber() {
+  return 42; // неявно оборачивается в Promise.resolve(42)
+}
+getNumber().then(console.log); // 42
+
+// ========== await работает только внутри async функций ==========
+// await можно использовать только внутри async (или в модулях верхнего уровня)
+
+// ========== Обработка нескольких независимых промисов ==========
+async function fetchAll() {
+  // ПЛОХО: последовательно (медленно)
+  const user = await fetchUser();
+  const posts = await fetchPosts();
+
+  // ХОРОШО: параллельно (быстро)
+  const [user, posts] = await Promise.all([fetchUser(), fetchPosts()]);
+}
+
+// ========== Главные преимущества ==========
+// 1. Читаемость — линейный код вместо вложенных then
+// 2. try/catch — привычная обработка ошибок
+// 3. Дебаг — можно ставить breakpoint на каждую строчку
+```
+
+---
+
+## 9. Кастомные методы Promise
+
+### Promise.all
+
+```js
+// Promise.all — ждет выполнения ВСЕХ промисов, возвращает массив результатов.
+// Если любой промис упадет с ошибкой → сразу reject с этой ошибкой.
+
+function promiseAll(promises) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    let completed = 0;
+
+    // Пустой массив → сразу resolve([])
+    if (promises.length === 0) {
+      resolve(results);
+      return;
+    }
+
+    promises.forEach((promise, index) => {
+      // Promise.resolve() оборачивает не-промисы в промисы
+      Promise.resolve(promise)
+        .then((result) => {
+          results[index] = result;
+          completed++;
+
+          if (completed === promises.length) {
+            resolve(results);
+          }
+        })
+        .catch((error) => {
+          reject(error); // первая же ошибка
+        });
+    });
+  });
+}
+
+// Пример:
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(2);
+const p3 = Promise.resolve(3);
+
+promiseAll([p1, p2, p3]).then(console.log); // [1, 2, 3]
+```
+
+### Promise.race
+
+```js
+// Promise.race — возвращает результат ПЕРВОГО завершенного промиса
+// (неважно, resolve или reject)
+
+function promiseRace(promises) {
+  return new Promise((resolve, reject) => {
+    promises.forEach((promise) => {
+      Promise.resolve(promise)
+        .then(resolve) // первый успешный
+        .catch(reject); // первая ошибка
+    });
+  });
+}
+
+// Пример:
+const slow = new Promise((resolve) => setTimeout(() => resolve("медленный"), 300));
+const fast = new Promise((resolve) => setTimeout(() => resolve("быстрый"), 100));
+
+promiseRace([slow, fast]).then(console.log); // "быстрый"
+```
+
+### Promise.allSettled
+
+```js
+// Promise.allSettled — ждет ВСЕ промисы, возвращает массив объектов
+// с результатами каждого (статус + value/reason)
+
+function promiseAllSettled(promises) {
+  return new Promise((resolve) => {
+    const results = [];
+    let completed = 0;
+
+    if (promises.length === 0) {
+      resolve(results);
+      return;
+    }
+
+    promises.forEach((promise, index) => {
+      Promise.resolve(promise)
+        .then((value) => {
+          results[index] = { status: "fulfilled", value };
+          completed++;
+          if (completed === promises.length) resolve(results);
+        })
+        .catch((reason) => {
+          results[index] = { status: "rejected", reason };
+          completed++;
+          if (completed === promises.length) resolve(results);
+        });
+    });
+  });
+}
+
+// Пример:
+const pSuccess = Promise.resolve("OK");
+const pFail = Promise.reject("Error");
+const pSlow = new Promise((resolve) => setTimeout(() => resolve("Медленный"), 200));
+
+promiseAllSettled([pSuccess, pFail, pSlow]).then((results) => {
+  console.log(results);
+  // [
+  //   { status: "fulfilled", value: "OK" },
+  //   { status: "rejected", reason: "Error" },
+  //   { status: "fulfilled", value: "Медленный" }
+  // ]
+});
+```
+
+### Promise.any (продвинутый)
+
+```js
+// Promise.any — возвращает результат ПЕРВОГО УСПЕШНОГО промиса.
+// Если все промисы упали → reject с AggregateError
+
+function promiseAny(promises) {
+  return new Promise((resolve, reject) => {
+    const errors = [];
+    let rejectedCount = 0;
+
+    if (promises.length === 0) {
+      reject(new AggregateError([], "All promises were rejected"));
+      return;
+    }
+
+    promises.forEach((promise, index) => {
+      Promise.resolve(promise)
+        .then(resolve) // первый успешный → resolve
+        .catch((error) => {
+          errors[index] = error;
+          rejectedCount++;
+
+          if (rejectedCount === promises.length) {
+            reject(new AggregateError(errors, "All promises were rejected"));
+          }
+        });
+    });
+  });
+}
+
+// Пример:
+const p1 = Promise.reject("Ошибка 1");
+const p2 = Promise.resolve("Успех!"); // будет этот
+const p3 = Promise.reject("Ошибка 2");
+
+promiseAny([p1, p2, p3]).then(console.log); // "Успех!"
+```
+
+---
+
+## Шпаргалка по Promise методам
+
+| Метод                  | Что делает                              | Какой результат                              |
+| ---------------------- | --------------------------------------- | -------------------------------------------- |
+| `Promise.all()`        | Ждет ВСЕ промисы                        | массив результатов ИЛИ первая ошибка         |
+| `Promise.allSettled()` | Ждет ВСЕ промисы                        | массив объектов (статус + результат каждого) |
+| `Promise.race()`       | Первый завершенный (resolve или reject) | первый результат ИЛИ первая ошибка           |
+| `Promise.any()`        | Первый УСПЕШНЫЙ                         | первый успешный результат ИЛИ AggregateError |
+
+---
+
+---
+
 ## Практические задачи с решениями
 
 ### Задача 1. Easy — порядок вывода

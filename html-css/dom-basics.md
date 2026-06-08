@@ -2,6 +2,90 @@
 
 ## Вопросы для закрепления
 
+---
+
+## 2. Что такое DOM дерево?
+
+```js
+// DOM (Document Object Model) — это представление HTML-документа в виде дерева.
+// Каждый тег — это узел (элемент), текст внутри тега — текстовый узел.
+
+// HTML:
+// <div class="container">
+//     <h1>Заголовок</h1>
+//     <p>Текст абзаца</p>
+// </div>
+
+// DOM дерево:
+//                    document
+//                       |
+//                      html
+//                       |
+//                     body
+//                       |
+//                 div.container
+//                    /    \
+//                 h1       p
+//                 |        |
+//           "Заголовок"   "Текст абзаца"
+
+// Работа с DOM через JavaScript:
+const container = document.querySelector(".container");
+const heading = document.createElement("h2");
+heading.textContent = "Новый заголовок";
+container.appendChild(heading);
+
+// Изменение DOM вызывает:
+// 1. Reflow (пересчет геометрии)
+// 2. Repaint (перерисовка)
+```
+
+---
+
+---
+
+## 4. Кроссбраузерность
+
+```js
+// Кроссбраузерность — способность сайта одинаково работать во всех браузерах.
+
+// ========== Проблемы ==========
+// - Разные браузеры по-разному поддерживают CSS свойства
+// - Разные реализации JavaScript API
+// - Разные стили по умолчанию
+
+// ========== Решения ==========
+
+// 1. Вендорные префиксы:
+.element {
+    -webkit-border-radius: 10px;  /* Chrome, Safari */
+    -moz-border-radius: 10px;     /* Firefox */
+    -ms-border-radius: 10px;      /* IE */
+    -o-border-radius: 10px;       /* Opera */
+    border-radius: 10px;          /* Стандарт */
+}
+
+// 2. Normalize.css / Reset.css — сбрасывают стили браузера по умолчанию
+
+// 3. Полифиллы — добавляют поддержку современных фич в старые браузеры:
+//    Например, полифилл для Promise в IE11
+
+// 4. Проверка поддержки (Can I Use):
+//    https://caniuse.com/
+
+// 5. Проверка в коде:
+if ('fetch' in window) {
+    // Используем fetch
+} else {
+    // Используем XMLHttpRequest (старый)
+}
+
+// 6. Автопрефиксеры (PostCSS, Autoprefixer):
+//    Пишете стандартный CSS → получаете с префиксами
+```
+
+---
+
 ### 1. Что такое document?
 
 ```js
@@ -10,7 +94,7 @@
 // и позволяет управлять содержимым страницы.
 
 // Пример:
-console.log(document.title);      // получаем заголовок страницы
+console.log(document.title); // получаем заголовок страницы
 document.title = "Новый заголовок"; // меняем заголовок
 ```
 
@@ -31,7 +115,7 @@ const firstButton = document.querySelector(".btn");
 
 // 2.4. querySelectorAll — ищет ВСЕ элементы по селектору (возвращает NodeList)
 const allButtons = document.querySelectorAll(".btn");
-allButtons.forEach(btn => console.log(btn));
+allButtons.forEach((btn) => console.log(btn));
 ```
 
 ### 3. Как изменять элемент в DOM?
@@ -39,29 +123,29 @@ allButtons.forEach(btn => console.log(btn));
 ```js
 // ========== 3.1. Изменение стилей ==========
 const box = document.querySelector(".box");
-box.style.backgroundColor = "red";   // меняем фон
-box.style.width = "200px";           // меняем ширину
-box.style.display = "none";          // скрываем
+box.style.backgroundColor = "red"; // меняем фон
+box.style.width = "200px"; // меняем ширину
+box.style.display = "none"; // скрываем
 
 // ========== 3.2. Работа с атрибутами ==========
 const link = document.querySelector("a");
-link.getAttribute("href");           // получить атрибут
+link.getAttribute("href"); // получить атрибут
 link.setAttribute("href", "https://example.com"); // установить атрибут
-link.removeAttribute("target");      // удалить атрибут
+link.removeAttribute("target"); // удалить атрибут
 
 // ========== 3.3. Изменение содержимого ==========
 const content = document.querySelector(".content");
 content.innerHTML = "<strong>Жирный текст</strong>"; // вставляет HTML
-content.innerText = "Обычный текст";  // вставляет ТОЛЬКО текст (безопаснее)
-content.textContent = "Тоже текст";   // похож на innerText, но быстрее
+content.innerText = "Обычный текст"; // вставляет ТОЛЬКО текст (безопаснее)
+content.textContent = "Тоже текст"; // похож на innerText, но быстрее
 
 // ========== 3.4. Добавление дочерних элементов ==========
 const parent = document.querySelector(".parent");
-const child = document.createElement("div");  // создаем элемент
+const child = document.createElement("div"); // создаем элемент
 child.textContent = "Новый дочерний элемент";
-parent.appendChild(child);        // старый способ
+parent.appendChild(child); // старый способ
 // или
-parent.append(child);             // современный способ
+parent.append(child); // современный способ
 ```
 
 ### 4. Метод addEventListener
@@ -74,7 +158,7 @@ const button = document.querySelector("button");
 // Синтаксис: элемент.addEventListener(событие, функция)
 
 button.addEventListener("click", () => {
-    console.log("Кнопка нажата!");
+  console.log("Кнопка нажата!");
 });
 
 // Другие популярные события:
@@ -86,7 +170,7 @@ button.addEventListener("click", () => {
 
 // Удаление обработчика (важно для оптимизации):
 function handleClick() {
-    console.log("Клик!");
+  console.log("Клик!");
 }
 button.addEventListener("click", handleClick);
 button.removeEventListener("click", handleClick);
@@ -99,40 +183,48 @@ button.removeEventListener("click", handleClick);
 ### Задача 1. Табы (вкладки)
 
 **HTML:**
+
 ```html
 <div class="tabs">
-    <button class="tab" data-target="content1">Вкладка 1</button>
-    <button class="tab" data-target="content2">Вкладка 2</button>
+  <button class="tab" data-target="content1">Вкладка 1</button>
+  <button class="tab" data-target="content2">Вкладка 2</button>
 </div>
 <div id="content1" class="content">Содержимое 1</div>
 <div id="content2" class="content hidden">Содержимое 2</div>
 ```
 
 **CSS:**
+
 ```css
-.hidden { display: none; }
-.content { padding: 20px; border: 1px solid #ccc; }
+.hidden {
+  display: none;
+}
+.content {
+  padding: 20px;
+  border: 1px solid #ccc;
+}
 ```
 
 **Решение:**
+
 ```js
 // script.js
 const tabs = document.querySelectorAll(".tab");
 const contents = document.querySelectorAll(".content");
 
-tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-        // Получаем id контента из атрибута data-target
-        const targetId = tab.getAttribute("data-target");
-        
-        // Скрываем все контенты
-        contents.forEach(content => {
-            content.classList.add("hidden");
-        });
-        
-        // Показываем выбранный контент
-        document.getElementById(targetId).classList.remove("hidden");
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    // Получаем id контента из атрибута data-target
+    const targetId = tab.getAttribute("data-target");
+
+    // Скрываем все контенты
+    contents.forEach((content) => {
+      content.classList.add("hidden");
     });
+
+    // Показываем выбранный контент
+    document.getElementById(targetId).classList.remove("hidden");
+  });
 });
 ```
 
@@ -141,6 +233,7 @@ tabs.forEach(tab => {
 ### Задача 2. Todo список с удалением
 
 **HTML:**
+
 ```html
 <input id="taskInput" placeholder="Введите задачу" />
 <button id="addTask">Добавить</button>
@@ -148,6 +241,7 @@ tabs.forEach(tab => {
 ```
 
 **Решение:**
+
 ```js
 const taskInput = document.querySelector("#taskInput");
 const addButton = document.querySelector("#addTask");
@@ -155,40 +249,40 @@ const taskList = document.querySelector("#taskList");
 
 // Функция добавления задачи
 function addTask() {
-    const taskText = taskInput.value.trim();
-    
-    if (taskText === "") {
-        alert("Введите текст задачи!");
-        return;
-    }
-    
-    // Создаем элементы
-    const li = document.createElement("li");
-    const deleteBtn = document.createElement("button");
-    
-    li.textContent = taskText;
-    deleteBtn.textContent = "Удалить";
-    deleteBtn.style.marginLeft = "10px";
-    
-    // Удаление при клике на кнопку
-    deleteBtn.addEventListener("click", () => {
-        li.remove();
-    });
-    
-    li.appendChild(deleteBtn);
-    taskList.appendChild(li);
-    
-    // Очищаем поле ввода
-    taskInput.value = "";
+  const taskText = taskInput.value.trim();
+
+  if (taskText === "") {
+    alert("Введите текст задачи!");
+    return;
+  }
+
+  // Создаем элементы
+  const li = document.createElement("li");
+  const deleteBtn = document.createElement("button");
+
+  li.textContent = taskText;
+  deleteBtn.textContent = "Удалить";
+  deleteBtn.style.marginLeft = "10px";
+
+  // Удаление при клике на кнопку
+  deleteBtn.addEventListener("click", () => {
+    li.remove();
+  });
+
+  li.appendChild(deleteBtn);
+  taskList.appendChild(li);
+
+  // Очищаем поле ввода
+  taskInput.value = "";
 }
 
 addButton.addEventListener("click", addTask);
 
 // Добавление по нажатию Enter
 taskInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-        addTask();
-    }
+  if (e.key === "Enter") {
+    addTask();
+  }
 });
 ```
 
@@ -197,15 +291,17 @@ taskInput.addEventListener("keypress", (e) => {
 ### Задача 3. Форма с валидацией email
 
 **HTML:**
+
 ```html
 <form id="form">
-    <input id="email" type="email" placeholder="Введите email" />
-    <span id="emailError" class="error" style="color: red;"></span>
-    <button type="submit">Отправить</button>
+  <input id="email" type="email" placeholder="Введите email" />
+  <span id="emailError" class="error" style="color: red;"></span>
+  <button type="submit">Отправить</button>
 </form>
 ```
 
 **Решение:**
+
 ```js
 const form = document.querySelector("#form");
 const emailInput = document.querySelector("#email");
@@ -213,24 +309,24 @@ const emailError = document.querySelector("#emailError");
 
 // Регулярное выражение для проверки email
 function isValidEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
 }
 
 form.addEventListener("submit", (e) => {
-    e.preventDefault(); // Отменяем отправку формы
-    
-    const email = emailInput.value.trim();
-    
-    if (!isValidEmail(email)) {
-        emailError.textContent = "Введите корректный email (пример: name@domain.com)";
-        return;
-    }
-    
-    // Если всё корректно
-    emailError.textContent = "";
-    alert("Форма успешно отправлена!");
-    form.reset(); // Очищаем форму
+  e.preventDefault(); // Отменяем отправку формы
+
+  const email = emailInput.value.trim();
+
+  if (!isValidEmail(email)) {
+    emailError.textContent = "Введите корректный email (пример: name@domain.com)";
+    return;
+  }
+
+  // Если всё корректно
+  emailError.textContent = "";
+  alert("Форма успешно отправлена!");
+  form.reset(); // Очищаем форму
 });
 ```
 
@@ -239,36 +335,38 @@ form.addEventListener("submit", (e) => {
 ### Задача 4. Сортировка карточек по алфавиту
 
 **HTML:**
+
 ```html
 <button id="sort">Сортировать</button>
 <div id="cards">
-    <div class="card">Банан</div>
-    <div class="card">Яблоко</div>
-    <div class="card">Апельсин</div>
+  <div class="card">Банан</div>
+  <div class="card">Яблоко</div>
+  <div class="card">Апельсин</div>
 </div>
 ```
 
 **Решение (исправленное):**
+
 ```js
 const sortButton = document.querySelector("#sort");
 const cardsContainer = document.querySelector("#cards");
 
 sortButton.addEventListener("click", () => {
-    // Получаем все карточки как массив
-    const cards = Array.from(cardsContainer.querySelectorAll(".card"));
-    
-    // Сортируем по тексту
-    const sortedCards = cards.sort((a, b) => {
-        return a.textContent.localeCompare(b.textContent);
-    });
-    
-    // Очищаем контейнер
-    cardsContainer.innerHTML = "";
-    
-    // Добавляем отсортированные карточки обратно
-    sortedCards.forEach(card => {
-        cardsContainer.appendChild(card);
-    });
+  // Получаем все карточки как массив
+  const cards = Array.from(cardsContainer.querySelectorAll(".card"));
+
+  // Сортируем по тексту
+  const sortedCards = cards.sort((a, b) => {
+    return a.textContent.localeCompare(b.textContent);
+  });
+
+  // Очищаем контейнер
+  cardsContainer.innerHTML = "";
+
+  // Добавляем отсортированные карточки обратно
+  sortedCards.forEach((card) => {
+    cardsContainer.appendChild(card);
+  });
 });
 ```
 
@@ -277,34 +375,36 @@ sortButton.addEventListener("click", () => {
 ### Задача 5. Динамический фильтр по списку
 
 **HTML:**
+
 ```html
 <input id="search" placeholder="Поиск..." />
 <ul id="peopleList">
-    <li>Анна</li>
-    <li>Борис</li>
-    <li>Виктор</li>
-    <li>Галина</li>
+  <li>Анна</li>
+  <li>Борис</li>
+  <li>Виктор</li>
+  <li>Галина</li>
 </ul>
 ```
 
 **Решение:**
+
 ```js
 const searchInput = document.querySelector("#search");
 const peopleList = document.querySelector("#peopleList");
 const items = peopleList.querySelectorAll("li");
 
 searchInput.addEventListener("input", (e) => {
-    const searchText = e.target.value.toLowerCase();
-    
-    items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        
-        if (text.includes(searchText)) {
-            item.style.display = "";      // показываем
-        } else {
-            item.style.display = "none";  // скрываем
-        }
-    });
+  const searchText = e.target.value.toLowerCase();
+
+  items.forEach((item) => {
+    const text = item.textContent.toLowerCase();
+
+    if (text.includes(searchText)) {
+      item.style.display = ""; // показываем
+    } else {
+      item.style.display = "none"; // скрываем
+    }
+  });
 });
 ```
 
@@ -317,28 +417,30 @@ searchInput.addEventListener("input", (e) => {
 ```html
 <button id="openModal">Открыть модалку</button>
 <div id="modal" class="modal hidden">
-    <div class="modal-content">
-        <span id="closeModal">&times;</span>
-        <p>Привет, я модальное окно!</p>
-    </div>
+  <div class="modal-content">
+    <span id="closeModal">&times;</span>
+    <p>Привет, я модальное окно!</p>
+  </div>
 </div>
 ```
 
 ```css
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
 }
-.modal.hidden { display: none; }
+.modal.hidden {
+  display: none;
+}
 .modal-content {
-    background: white;
-    margin: 15% auto;
-    padding: 20px;
-    width: 300px;
+  background: white;
+  margin: 15% auto;
+  padding: 20px;
+  width: 300px;
 }
 ```
 
@@ -348,17 +450,17 @@ const modal = document.querySelector("#modal");
 const closeBtn = document.querySelector("#closeModal");
 
 openBtn.addEventListener("click", () => {
-    modal.classList.remove("hidden");
+  modal.classList.remove("hidden");
 });
 
 closeBtn.addEventListener("click", () => {
-    modal.classList.add("hidden");
+  modal.classList.add("hidden");
 });
 
 modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.classList.add("hidden");
-    }
+  if (e.target === modal) {
+    modal.classList.add("hidden");
+  }
 });
 ```
 
@@ -381,22 +483,22 @@ const decrementBtn = document.querySelector("#decrement");
 const resetBtn = document.querySelector("#reset");
 
 function updateCounter() {
-    counterSpan.textContent = count;
+  counterSpan.textContent = count;
 }
 
 incrementBtn.addEventListener("click", () => {
-    count++;
-    updateCounter();
+  count++;
+  updateCounter();
 });
 
 decrementBtn.addEventListener("click", () => {
-    count--;
-    updateCounter();
+  count--;
+  updateCounter();
 });
 
 resetBtn.addEventListener("click", () => {
-    count = 0;
-    updateCounter();
+  count = 0;
+  updateCounter();
 });
 ```
 
@@ -404,21 +506,20 @@ resetBtn.addEventListener("click", () => {
 
 ## Шпаргалка по DOM-методам
 
-| Что делаем | Метод |
-|------------|-------|
-| Найти элемент по id | `getElementById('id')` |
-| Найти по классу | `getElementsByClassName('class')` |
-| Найти по селектору (один) | `querySelector('.class')` |
-| Найти по селектору (все) | `querySelectorAll('.class')` |
-| Создать элемент | `createElement('div')` |
-| Добавить в конец | `parent.appendChild(child)` |
-| Удалить элемент | `element.remove()` |
-| Изменить текст | `element.textContent = 'text'` |
-| Изменить HTML | `element.innerHTML = '<p>'` |
-| Добавить класс | `element.classList.add('class')` |
-| Убрать класс | `element.classList.remove('class')` |
-| Переключить класс | `element.classList.toggle('class')` |
-| Установить атрибут | `element.setAttribute('src', 'img.jpg')` |
-| Получить атрибут | `element.getAttribute('src')` |
-| Добавить обработчик | `element.addEventListener('click', fn)` |
-
+| Что делаем                | Метод                                    |
+| ------------------------- | ---------------------------------------- |
+| Найти элемент по id       | `getElementById('id')`                   |
+| Найти по классу           | `getElementsByClassName('class')`        |
+| Найти по селектору (один) | `querySelector('.class')`                |
+| Найти по селектору (все)  | `querySelectorAll('.class')`             |
+| Создать элемент           | `createElement('div')`                   |
+| Добавить в конец          | `parent.appendChild(child)`              |
+| Удалить элемент           | `element.remove()`                       |
+| Изменить текст            | `element.textContent = 'text'`           |
+| Изменить HTML             | `element.innerHTML = '<p>'`              |
+| Добавить класс            | `element.classList.add('class')`         |
+| Убрать класс              | `element.classList.remove('class')`      |
+| Переключить класс         | `element.classList.toggle('class')`      |
+| Установить атрибут        | `element.setAttribute('src', 'img.jpg')` |
+| Получить атрибут          | `element.getAttribute('src')`            |
+| Добавить обработчик       | `element.addEventListener('click', fn)`  |
