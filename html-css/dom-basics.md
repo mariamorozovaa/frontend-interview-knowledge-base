@@ -1,283 +1,424 @@
-# 📘 JavaScript база знаний: Работа с DOM
+# Работа с DOM
 
-## 1. Что такое document?
+## Вопросы для закрепления
 
-**Ответ:**
-
-`document` — это глобальный объект, который представляет HTML-документ в браузере.
-
-Он является точкой входа в DOM (Document Object Model) и позволяет управлять страницей.
+### 1. Что такое document?
 
 ```js
-console.log(document.title);
+// document — это глобальный объект, представляющий HTML-документ,
+// загруженный в браузере. Он является точкой входа в DOM (Document Object Model)
+// и позволяет управлять содержимым страницы.
 
-document.title = "Новый заголовок";
+// Пример:
+console.log(document.title);      // получаем заголовок страницы
+document.title = "Новый заголовок"; // меняем заголовок
 ```
 
----
-
-## 2. Как искать элементы в DOM?
-
-**Ответ:**
-
-### Основные способы поиска:
+### 2. Как обращаться к элементам?
 
 ```js
-// По id
-document.getElementById("header");
+// ========== Методы поиска элементов ==========
 
-// По классу (устаревший HTMLCollection)
-document.getElementsByClassName("item");
+// 2.1. getElementsByClassName — ищет элементы по имени класса (возвращает HTMLCollection)
+const items = document.getElementsByClassName("item");
+console.log(items[0]);
 
-// CSS-селектор (первый элемент)
-document.querySelector(".item");
+// 2.2. getElementById — ищет элемент по id (возвращает один элемент)
+const header = document.getElementById("main-header");
 
-// CSS-селектор (все элементы)
-document.querySelectorAll(".item");
+// 2.3. querySelector — ищет ПЕРВЫЙ элемент, подходящий под CSS-селектор
+const firstButton = document.querySelector(".btn");
+
+// 2.4. querySelectorAll — ищет ВСЕ элементы по селектору (возвращает NodeList)
+const allButtons = document.querySelectorAll(".btn");
+allButtons.forEach(btn => console.log(btn));
 ```
 
----
-
-## 3. В чем разница querySelector и querySelectorAll?
-
-**Ответ:**
-
-- `querySelector` → возвращает первый найденный элемент
-- `querySelectorAll` → возвращает список всех элементов (NodeList)
+### 3. Как изменять элемент в DOM?
 
 ```js
-document.querySelector(".btn"); // один элемент
-document.querySelectorAll(".btn"); // список элементов
-```
-
----
-
-## 4. Как изменить DOM-элемент?
-
-**Ответ:**
-
-Можно менять:
-
-- стили
-- атрибуты
-- текст
-- HTML
-- структуру
-
-```js
+// ========== 3.1. Изменение стилей ==========
 const box = document.querySelector(".box");
+box.style.backgroundColor = "red";   // меняем фон
+box.style.width = "200px";           // меняем ширину
+box.style.display = "none";          // скрываем
 
-// стили
-box.style.color = "red";
+// ========== 3.2. Работа с атрибутами ==========
+const link = document.querySelector("a");
+link.getAttribute("href");           // получить атрибут
+link.setAttribute("href", "https://example.com"); // установить атрибут
+link.removeAttribute("target");      // удалить атрибут
 
-// текст
-box.textContent = "Привет";
+// ========== 3.3. Изменение содержимого ==========
+const content = document.querySelector(".content");
+content.innerHTML = "<strong>Жирный текст</strong>"; // вставляет HTML
+content.innerText = "Обычный текст";  // вставляет ТОЛЬКО текст (безопаснее)
+content.textContent = "Тоже текст";   // похож на innerText, но быстрее
 
-// HTML
-box.innerHTML = "<b>Жирный текст</b>";
+// ========== 3.4. Добавление дочерних элементов ==========
+const parent = document.querySelector(".parent");
+const child = document.createElement("div");  // создаем элемент
+child.textContent = "Новый дочерний элемент";
+parent.appendChild(child);        // старый способ
+// или
+parent.append(child);             // современный способ
 ```
 
----
-
-## 5. Как создавать элементы в DOM?
-
-**Ответ:**
+### 4. Метод addEventListener
 
 ```js
-const div = document.createElement("div");
-div.textContent = "Новый элемент";
+// addEventListener — метод для "прослушивания" событий на элементе
 
-document.body.appendChild(div);
+const button = document.querySelector("button");
+
+// Синтаксис: элемент.addEventListener(событие, функция)
+
+button.addEventListener("click", () => {
+    console.log("Кнопка нажата!");
+});
+
+// Другие популярные события:
+// - click (клик мыши)
+// - input (ввод текста)
+// - submit (отправка формы)
+// - keydown (нажатие клавиши)
+// - mouseenter (наведение мыши)
+
+// Удаление обработчика (важно для оптимизации):
+function handleClick() {
+    console.log("Клик!");
+}
+button.addEventListener("click", handleClick);
+button.removeEventListener("click", handleClick);
 ```
 
 ---
 
-## 6. Как работают события в DOM?
+## Практические задачи с решениями
 
-**Ответ:**
+### Задача 1. Табы (вкладки)
 
-События обрабатываются через `addEventListener`.
+**HTML:**
+```html
+<div class="tabs">
+    <button class="tab" data-target="content1">Вкладка 1</button>
+    <button class="tab" data-target="content2">Вкладка 2</button>
+</div>
+<div id="content1" class="content">Содержимое 1</div>
+<div id="content2" class="content hidden">Содержимое 2</div>
+```
 
+**CSS:**
+```css
+.hidden { display: none; }
+.content { padding: 20px; border: 1px solid #ccc; }
+```
+
+**Решение:**
 ```js
-const btn = document.querySelector("button");
+// script.js
+const tabs = document.querySelectorAll(".tab");
+const contents = document.querySelectorAll(".content");
 
-btn.addEventListener("click", () => {
-  console.log("Клик!");
+tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        // Получаем id контента из атрибута data-target
+        const targetId = tab.getAttribute("data-target");
+        
+        // Скрываем все контенты
+        contents.forEach(content => {
+            content.classList.add("hidden");
+        });
+        
+        // Показываем выбранный контент
+        document.getElementById(targetId).classList.remove("hidden");
+    });
 });
 ```
 
 ---
 
-## 7. Какие бывают популярные события?
+### Задача 2. Todo список с удалением
 
-**Ответ:**
-
-- click — клик мыши
-- input — ввод текста
-- submit — отправка формы
-- keydown — нажатие клавиши
-- mouseenter — наведение мыши
-
----
-
-# 🧠 Практические задачи
-
----
-
-## Задача 1. Изменение текста кнопки
-
-```js id="btn-text"
-const btn = document.querySelector("button");
-
-btn.addEventListener("click", () => {
-  btn.textContent = "Нажато!";
-});
-```
-
----
-
-## Задача 2. Скрытие / показ блока
-
+**HTML:**
 ```html
-<button id="toggle">Показать/Скрыть</button>
-<div id="box">Контент</div>
+<input id="taskInput" placeholder="Введите задачу" />
+<button id="addTask">Добавить</button>
+<ul id="taskList"></ul>
 ```
 
-```js id="toggle-box"
-const btn = document.querySelector("#toggle");
-const box = document.querySelector("#box");
+**Решение:**
+```js
+const taskInput = document.querySelector("#taskInput");
+const addButton = document.querySelector("#addTask");
+const taskList = document.querySelector("#taskList");
 
-btn.addEventListener("click", () => {
-  box.style.display = box.style.display === "none" ? "block" : "none";
+// Функция добавления задачи
+function addTask() {
+    const taskText = taskInput.value.trim();
+    
+    if (taskText === "") {
+        alert("Введите текст задачи!");
+        return;
+    }
+    
+    // Создаем элементы
+    const li = document.createElement("li");
+    const deleteBtn = document.createElement("button");
+    
+    li.textContent = taskText;
+    deleteBtn.textContent = "Удалить";
+    deleteBtn.style.marginLeft = "10px";
+    
+    // Удаление при клике на кнопку
+    deleteBtn.addEventListener("click", () => {
+        li.remove();
+    });
+    
+    li.appendChild(deleteBtn);
+    taskList.appendChild(li);
+    
+    // Очищаем поле ввода
+    taskInput.value = "";
+}
+
+addButton.addEventListener("click", addTask);
+
+// Добавление по нажатию Enter
+taskInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        addTask();
+    }
 });
 ```
 
 ---
 
-## Задача 3. Добавление элементов в список
+### Задача 3. Форма с валидацией email
 
+**HTML:**
 ```html
-<input id="input" />
-<button id="add">Добавить</button>
-<ul id="list"></ul>
+<form id="form">
+    <input id="email" type="email" placeholder="Введите email" />
+    <span id="emailError" class="error" style="color: red;"></span>
+    <button type="submit">Отправить</button>
+</form>
 ```
 
-```js id="add-list"
-const input = document.querySelector("#input");
-const btn = document.querySelector("#add");
-const list = document.querySelector("#list");
+**Решение:**
+```js
+const form = document.querySelector("#form");
+const emailInput = document.querySelector("#email");
+const emailError = document.querySelector("#emailError");
 
-btn.addEventListener("click", () => {
-  const li = document.createElement("li");
+// Регулярное выражение для проверки email
+function isValidEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
 
-  li.textContent = input.value;
-  list.appendChild(li);
-
-  input.value = "";
+form.addEventListener("submit", (e) => {
+    e.preventDefault(); // Отменяем отправку формы
+    
+    const email = emailInput.value.trim();
+    
+    if (!isValidEmail(email)) {
+        emailError.textContent = "Введите корректный email (пример: name@domain.com)";
+        return;
+    }
+    
+    // Если всё корректно
+    emailError.textContent = "";
+    alert("Форма успешно отправлена!");
+    form.reset(); // Очищаем форму
 });
 ```
 
 ---
 
-## Задача 4. Удаление элемента
+### Задача 4. Сортировка карточек по алфавиту
 
-```js id="remove-item"
-const items = document.querySelectorAll("li");
-
-items.forEach((item) => {
-  item.addEventListener("click", () => {
-    item.remove();
-  });
-});
-```
-
----
-
-## Задача 5. Переключение класса
-
-```js id="toggle-class"
-const box = document.querySelector(".box");
-
-box.addEventListener("click", () => {
-  box.classList.toggle("active");
-});
-```
-
----
-
-## Задача 6. Фильтрация списка
-
+**HTML:**
 ```html
-<input id="search" />
-<ul>
-  <li>Anna</li>
-  <li>Boris</li>
-  <li>Victor</li>
+<button id="sort">Сортировать</button>
+<div id="cards">
+    <div class="card">Банан</div>
+    <div class="card">Яблоко</div>
+    <div class="card">Апельсин</div>
+</div>
+```
+
+**Решение (исправленное):**
+```js
+const sortButton = document.querySelector("#sort");
+const cardsContainer = document.querySelector("#cards");
+
+sortButton.addEventListener("click", () => {
+    // Получаем все карточки как массив
+    const cards = Array.from(cardsContainer.querySelectorAll(".card"));
+    
+    // Сортируем по тексту
+    const sortedCards = cards.sort((a, b) => {
+        return a.textContent.localeCompare(b.textContent);
+    });
+    
+    // Очищаем контейнер
+    cardsContainer.innerHTML = "";
+    
+    // Добавляем отсортированные карточки обратно
+    sortedCards.forEach(card => {
+        cardsContainer.appendChild(card);
+    });
+});
+```
+
+---
+
+### Задача 5. Динамический фильтр по списку
+
+**HTML:**
+```html
+<input id="search" placeholder="Поиск..." />
+<ul id="peopleList">
+    <li>Анна</li>
+    <li>Борис</li>
+    <li>Виктор</li>
+    <li>Галина</li>
 </ul>
 ```
 
-```js id="filter-list"
-const input = document.querySelector("#search");
-const items = document.querySelectorAll("li");
+**Решение:**
+```js
+const searchInput = document.querySelector("#search");
+const peopleList = document.querySelector("#peopleList");
+const items = peopleList.querySelectorAll("li");
 
-input.addEventListener("input", (e) => {
-  const value = e.target.value.toLowerCase();
-
-  items.forEach((item) => {
-    const text = item.textContent.toLowerCase();
-
-    item.style.display = text.includes(value) ? "" : "none";
-  });
+searchInput.addEventListener("input", (e) => {
+    const searchText = e.target.value.toLowerCase();
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        
+        if (text.includes(searchText)) {
+            item.style.display = "";      // показываем
+        } else {
+            item.style.display = "none";  // скрываем
+        }
+    });
 });
 ```
 
 ---
 
-## Задача 7. Счётчик
+## Дополнительные задачи для практики
 
-```js id="counter"
+### Задача 6. Модальное окно
+
+```html
+<button id="openModal">Открыть модалку</button>
+<div id="modal" class="modal hidden">
+    <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <p>Привет, я модальное окно!</p>
+    </div>
+</div>
+```
+
+```css
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+.modal.hidden { display: none; }
+.modal-content {
+    background: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 300px;
+}
+```
+
+```js
+const openBtn = document.querySelector("#openModal");
+const modal = document.querySelector("#modal");
+const closeBtn = document.querySelector("#closeModal");
+
+openBtn.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+});
+
+closeBtn.addEventListener("click", () => {
+    modal.classList.add("hidden");
+});
+
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.classList.add("hidden");
+    }
+});
+```
+
+---
+
+### Задача 7. Счётчик с кнопками
+
+```html
+<span id="counter">0</span>
+<button id="increment">+</button>
+<button id="decrement">-</button>
+<button id="reset">Сброс</button>
+```
+
+```js
 let count = 0;
+const counterSpan = document.querySelector("#counter");
+const incrementBtn = document.querySelector("#increment");
+const decrementBtn = document.querySelector("#decrement");
+const resetBtn = document.querySelector("#reset");
 
-const span = document.querySelector("#count");
+function updateCounter() {
+    counterSpan.textContent = count;
+}
 
-document.querySelector("#plus").addEventListener("click", () => {
-  count++;
-  span.textContent = count;
+incrementBtn.addEventListener("click", () => {
+    count++;
+    updateCounter();
 });
 
-document.querySelector("#minus").addEventListener("click", () => {
-  count--;
-  span.textContent = count;
+decrementBtn.addEventListener("click", () => {
+    count--;
+    updateCounter();
+});
+
+resetBtn.addEventListener("click", () => {
+    count = 0;
+    updateCounter();
 });
 ```
 
 ---
 
-# 📊 Шпаргалка DOM
+## Шпаргалка по DOM-методам
 
-| Действие         | Метод                  |
-| ---------------- | ---------------------- |
-| Найти по id      | getElementById         |
-| Найти по классу  | getElementsByClassName |
-| Найти 1 элемент  | querySelector          |
-| Найти все        | querySelectorAll       |
-| Создать элемент  | createElement          |
-| Добавить элемент | appendChild / append   |
-| Удалить элемент  | remove                 |
-| Изменить текст   | textContent            |
-| Изменить HTML    | innerHTML              |
-| Стили            | style                  |
-| Классы           | classList              |
+| Что делаем | Метод |
+|------------|-------|
+| Найти элемент по id | `getElementById('id')` |
+| Найти по классу | `getElementsByClassName('class')` |
+| Найти по селектору (один) | `querySelector('.class')` |
+| Найти по селектору (все) | `querySelectorAll('.class')` |
+| Создать элемент | `createElement('div')` |
+| Добавить в конец | `parent.appendChild(child)` |
+| Удалить элемент | `element.remove()` |
+| Изменить текст | `element.textContent = 'text'` |
+| Изменить HTML | `element.innerHTML = '<p>'` |
+| Добавить класс | `element.classList.add('class')` |
+| Убрать класс | `element.classList.remove('class')` |
+| Переключить класс | `element.classList.toggle('class')` |
+| Установить атрибут | `element.setAttribute('src', 'img.jpg')` |
+| Получить атрибут | `element.getAttribute('src')` |
+| Добавить обработчик | `element.addEventListener('click', fn)` |
 
----
-
-# 🚀 Итог
-
-DOM — это способ JavaScript управлять HTML-страницей.
-
-Главные навыки:
-
-✔ находить элементы
-✔ изменять их
-✔ работать с событиями
-✔ создавать динамику
