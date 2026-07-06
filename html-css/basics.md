@@ -1,37 +1,40 @@
-# HTML, CSS --- Общее
+# HTML, CSS - Общее
 
 ## 0. Что происходит после того как пользователь нажал Enter?
 
-После ввода URL браузер: 1. Проверяет кэш. 2. Выполняет DNS Lookup. 3.
-Устанавливает TCP-соединение. 4. Выполняет TLS Handshake (HTTPS). 5.
-Отправляет HTTP-запрос. 6. Получает HTTP-ответ. 7. Начинает рендеринг
-страницы: **DOM → CSSOM → Render Tree → Layout → Paint → Composite**.
+После ввода URL браузер:
+
+1. Проверяет кэш.
+2. Выполняет DNS Lookup.
+3. Устанавливает TCP-соединение.
+4. Выполняет TLS Handshake (HTTPS).
+5. Отправляет HTTP-запрос.
+6. Получает HTTP-ответ.
+7. Начинает рендеринг страницы: **DOM → CSSOM → Render Tree → Layout → Paint → Composite**.
 
 ---
 
 ## 1. Расскажи про этапы композиции слоев в Render Tree
 
-После построения Render Tree: 1. **Layout (Reflow)** --- вычисление
-размеров и положения элементов. 2. **Paint** --- отрисовка текста,
-фонов, границ и других визуальных свойств. 3. **Layering** --- создание
-отдельных слоев для элементов (`transform`, `opacity`,
-`position: fixed`, `will-change`). 4. **Rasterization** ---
-преобразование слоев в текстуры. 5. **Composite** --- GPU объединяет
-слои в итоговое изображение.
+После построения Render Tree:
 
-> Layout --- самая дорогая операция, Composite --- самая дешёвая.
+1. **Layout (Reflow)** - вычисление размеров и положения элементов.
+2. **Paint** - отрисовка текста, фонов, границ и других визуальных свойств.
+3. **Layering** - создание отдельных слоев для элементов (`transform`, `opacity`, `position: fixed`, `will-change`).
+4. **Rasterization** - преобразование слоев в текстуры.
+5. **Composite** - GPU объединяет слои в итоговое изображение.
+
+> Layout - самая дорогая операция, Composite - самая дешёвая.
 
 ---
 
 ## 2. Что такое Repaint и Reflow?
 
-**Reflow (Layout)** --- пересчет размеров и положения элементов.
-Вызывается изменением `width`, `height`, `margin`, `padding`,
-`font-size` и т.д.
+**Reflow (Layout)** - пересчет размеров и положения элементов.
+Вызывается изменением `width`, `height`, `margin`, `padding`, `font-size` и т.д.
 
-**Repaint** --- перерисовка пикселей без изменения геометрии. Вызывается
-изменением `color`, `background`, `border-color`, `box-shadow`.
-
+**Repaint** - перерисовка пикселей без изменения геометрии.
+Вызывается изменением `color`, `background`, `border-color`, `box-shadow`.
 `transform` и `opacity` обычно вызывают только **Composite**.
 
 ---
@@ -45,10 +48,10 @@
 
 ## 4. Что такое DOM дерево?
 
-DOM (Document Object Model) --- объектное представление HTML-документа.
+DOM (Document Object Model) - объектное представление HTML-документа.
 JavaScript работает именно с DOM.
 
-DOM строится по HTML, CSSOM --- по CSS, затем они объединяются в Render
+DOM строится по HTML, CSSOM - по CSS, затем они объединяются в Render
 Tree.
 
 ---
@@ -67,8 +70,13 @@ Tree.
 ARIA (Accessible Rich Internet Applications) помогает вспомогательным
 технологиям понимать интерфейс.
 
-Примеры: - `aria-label` - `aria-expanded` - `aria-hidden` -
-`aria-live` - `aria-describedby`
+Примеры:
+
+- `aria-label`
+- `aria-expanded`
+- `aria-hidden`
+- `aria-live`
+- `aria-describedby`
 
 Используется, когда возможностей семантического HTML недостаточно.
 
@@ -86,11 +94,13 @@ ARIA (Accessible Rich Internet Applications) помогает вспомогат
 
 ## 8. Что такое Shadow DOM?
 
-Shadow DOM --- изолированное DOM-дерево внутри элемента, используемое в
-Web Components.
+Shadow DOM - изолированное DOM-дерево внутри элемента, используемое в Web Components.
 
-Преимущества: - инкапсуляция; - изоляция CSS; - отсутствие конфликтов
-стилей.
+Преимущества:
+
+- инкапсуляция;
+- изоляция CSS;
+- отсутствие конфликтов стилей.
 
 ---
 
@@ -123,14 +133,12 @@ Web Components.
 Без атрибута Блокирует HTML, выполняется сразу
 
 `defer` Загружается параллельно,
-выполняется после DOM, сохраняет
-порядок
+выполняется после DOM,
+сохраняет порядок
 
 `async` Загружается параллельно,
 выполняется сразу после загрузки,
 порядок не гарантируется
-
----
 
 ---
 
