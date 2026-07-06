@@ -2,6 +2,491 @@
 
 ## Вопросы с собеседования
 
+# 🧠 OOP (Объектно-ориентированное программирование)
+
+---
+
+## 1. Что такое ООП?
+
+**ООП (Object-Oriented Programming)** — это парадигма программирования, где программа строится вокруг **объектов**, а не функций.
+
+### Объект = данные + поведение
+
+```ts
+class User {
+  constructor(
+    public name: string,
+    public age: number,
+  ) {}
+
+  greet() {
+    return `Hello, ${this.name}`;
+  }
+}
+```
+
+---
+
+## 💡 Идея ООП:
+
+Мы моделируем реальный мир:
+
+- человек → объект User
+- заказ → Order
+- корзина → Cart
+
+---
+
+## 2. Основные принципы ООП
+
+---
+
+### 1. Инкапсуляция
+
+**Скрытие внутренней логики и защита состояния**
+
+```ts
+class BankAccount {
+  private balance = 0;
+
+  deposit(amount: number) {
+    this.balance += amount;
+  }
+
+  getBalance() {
+    return this.balance;
+  }
+}
+```
+
+👉 нельзя напрямую менять `balance`
+
+---
+
+### 2. Наследование
+
+**Один класс наследует поведение другого**
+
+```ts
+class Animal {
+  move() {
+    console.log("moving");
+  }
+}
+
+class Dog extends Animal {
+  bark() {
+    console.log("woof");
+  }
+}
+```
+
+---
+
+### 3. Полиморфизм
+
+**Одинаковый интерфейс — разное поведение**
+
+```ts
+class Animal {
+  speak() {
+    console.log("sound");
+  }
+}
+
+class Dog extends Animal {
+  speak() {
+    console.log("woof");
+  }
+}
+
+class Cat extends Animal {
+  speak() {
+    console.log("meow");
+  }
+}
+```
+
+👉 один метод — разные реализации
+
+---
+
+### 4. Абстракция
+
+**Скрытие деталей реализации, оставляем только суть**
+
+```ts
+abstract class Payment {
+  abstract pay(amount: number): void;
+}
+
+class CardPayment extends Payment {
+  pay(amount: number) {
+    console.log("Pay by card", amount);
+  }
+}
+```
+
+👉 пользователь не думает _как_, только _что делает_
+
+---
+
+## 3. Зачем нужны принципы программирования?
+
+Чтобы:
+
+- уменьшить сложность системы
+- упростить поддержку
+- облегчить масштабирование
+- снизить количество багов
+- ускорить разработку в команде
+
+👉 без принципов код превращается в “спагетти”
+
+---
+
+## 4. DRY
+
+**Don’t Repeat Yourself**
+
+👉 не дублируй код
+
+---
+
+### Плохо:
+
+```ts
+function getUser() {}
+function getAdmin() {}
+function getGuest() {}
+```
+
+---
+
+### Лучше:
+
+```ts
+function getUser(role: string) {}
+```
+
+---
+
+💡 идея:
+
+- один источник правды
+- меньше дублирования → меньше багов
+
+---
+
+## 5. KISS
+
+**Keep It Simple, Stupid**
+
+👉 делай максимально просто
+
+---
+
+### Плохо:
+
+```ts
+if (user?.role?.permissions?.length > 0 === true) {
+}
+```
+
+---
+
+### Лучше:
+
+```ts
+const hasPermissions = user.role.permissions.length > 0;
+if (hasPermissions) {
+}
+```
+
+---
+
+💡 принцип:
+
+- простота важнее “умного” кода
+- чем проще — тем легче поддержка
+
+---
+
+## 6. SOLID
+
+---
+
+### S — Single Responsibility
+
+Один класс = одна ответственность
+
+```ts
+class Report {
+  generate() {}
+}
+```
+
+❌ плохо:
+
+```ts
+class Report {
+  generate() {}
+  saveToDB() {}
+}
+```
+
+---
+
+### O — Open/Closed
+
+Открыт для расширения, закрыт для изменения
+
+```ts
+class Payment {
+  pay() {}
+}
+
+class CardPayment extends Payment {
+  pay() {}
+}
+```
+
+---
+
+### L — Liskov Substitution
+
+Наследники должны заменять базовый класс
+
+👉 если ломается логика — нарушение принципа
+
+---
+
+### I — Interface Segregation
+
+Не заставляй класс реализовывать лишнее
+
+```ts
+interface Worker {
+  work(): void;
+  eat(): void;
+}
+```
+
+❌ плохо для робота
+
+---
+
+### D — Dependency Inversion
+
+Зависеть от абстракций, а не от реализаций
+
+```ts
+interface DB {
+  save(): void;
+}
+
+class MySQL implements DB {
+  save() {}
+}
+
+class Service {
+  constructor(private db: DB) {}
+}
+```
+
+---
+
+# 🧩 Patterns (Паттерны проектирования)
+
+---
+
+## 1. Что такое паттерны?
+
+**Паттерны — это типовые решения типовых проблем**
+
+👉 не код, а **подход**
+
+---
+
+## 2. Группы паттернов
+
+---
+
+### 1. Порождающие (Creational)
+
+Как создавать объекты:
+
+- Singleton
+- Factory
+- Builder
+- Prototype
+
+---
+
+### 2. Структурные (Structural)
+
+Как строить структуру:
+
+- Adapter
+- Decorator
+- Facade
+- Proxy
+
+---
+
+### 3. Поведенческие (Behavioral)
+
+Как объекты взаимодействуют:
+
+- Observer
+- Strategy
+- Command
+- State
+
+---
+
+## 3. Какие паттерны нужно знать чаще всего
+
+---
+
+### Singleton
+
+Один экземпляр класса
+
+```ts
+class DB {
+  private static instance: DB;
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new DB();
+    }
+    return this.instance;
+  }
+}
+```
+
+---
+
+### Factory
+
+Создание объектов через фабрику
+
+---
+
+### Observer
+
+Подписка на события (React, EventEmitter)
+
+---
+
+### Strategy
+
+Замена алгоритма “на лету”
+
+---
+
+### Decorator
+
+Добавление поведения без изменения класса
+
+---
+
+# 🏗 Other Architecture
+
+---
+
+## 1. Цель любой архитектуры
+
+👉 сделать систему:
+
+- понятной
+- расширяемой
+- поддерживаемой
+- масштабируемой
+- тестируемой
+
+---
+
+💡 Хорошая архитектура снижает стоимость изменений
+
+---
+
+## 2. Какие архитектуры бывают?
+
+---
+
+### 1. Monolith
+
+Всё в одном приложении
+
+✔ просто
+❌ сложно масштабировать
+
+---
+
+### 2. Microservices
+
+Система из маленьких сервисов
+
+✔ масштабируемость
+❌ сложность инфраструктуры
+
+---
+
+### 3. Layered Architecture
+
+Слои:
+
+- controller
+- service
+- repository
+
+---
+
+### 4. Clean Architecture
+
+Зависимости идут внутрь:
+
+```
+UI → UseCases → Domain → Data
+```
+
+---
+
+### 5. MVC
+
+- Model — данные
+- View — UI
+- Controller — логика
+
+---
+
+### 6. Event-driven architecture
+
+Система через события
+
+---
+
+💡 пример:
+
+- Kafka
+- RabbitMQ
+- WebSocket системы
+
+---
+
+# 📌 Итог
+
+Архитектура = баланс между:
+
+- сложностью
+- масштабированием
+- поддержкой
+- скоростью разработки
+
+---
+
 ### 1. Что такое ООП?
 
 ```js

@@ -1,5 +1,262 @@
 # Дженерики (Generics)
 
+---
+
+## 1. Что такое дженерики (Generics) в TS?
+
+Дженерики — это способ создавать **обобщённые типы и функции**, которые могут работать с разными типами данных, но при этом **сохраняют строгую типизацию**.
+
+Проще:
+
+> дженерик = “тип как параметр”
+
+### Проблема без generics:
+
+```typescript
+function identity(arg: any): any {
+  return arg;
+}
+```
+
+Минус: теряется тип.
+
+### Решение с generics:
+
+```typescript
+function identity<T>(arg: T): T {
+  return arg;
+}
+```
+
+### Что происходит:
+
+- `T` — это переменная типа
+- TypeScript подставляет реальный тип при вызове
+- сохраняется точная типизация
+
+---
+
+## 2. Как указать значение generics по умолчанию?
+
+Значение по умолчанию задаётся через `=`:
+
+```typescript
+function wrap<T = string>(value: T): T[] {
+  return [value];
+}
+```
+
+### Примеры:
+
+```typescript
+wrap("hello"); // T = string (по умолчанию)
+wrap<number>(123); // T = number (явно)
+```
+
+### Где ещё используется:
+
+```typescript
+type ApiResponse<T = unknown> = {
+  data: T;
+};
+```
+
+---
+
+## 3. Можно ли один дженерик описать сразу несколько типов?
+
+Да — через **tuple / union / multiple generic parameters**.
+
+### 1. Несколько дженериков:
+
+```typescript
+function pair<T, U>(a: T, b: U) {
+  return [a, b];
+}
+```
+
+---
+
+### 2. Один дженерик как “набор типов” (tuple):
+
+```typescript
+type Pair<T extends [any, any]> = {
+  first: T[0];
+  second: T[1];
+};
+```
+
+---
+
+### 3. Один дженерик как union:
+
+```typescript
+type Value<T> = T extends string | number ? T : never;
+```
+
+---
+
+### Итог:
+
+- ❗ Один generic = один параметр типа
+- ✔ Но он может быть:
+  - union (`string | number`)
+  - tuple (`[T, U]`)
+  - объектом (`{a: T, b: U}`)
+
+---
+
+## 4. Почему нужно `extends keyof T`, а не просто `keyof T`?
+
+### ❌ Неправильно:
+
+```typescript
+function get<T, K: keyof T>(obj: T, key: K) {}
+```
+
+### ❗ Почему нельзя просто `keyof T`?
+
+`keyof T` — это **готовый union всех ключей**, а не ограничение.
+
+---
+
+### ✔ Правильный вариант:
+
+```typescript
+function get<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+```
+
+---
+
+### Почему `extends` нужен:
+
+- `K` — это **переменная типа**
+- `keyof T` — это **набор допустимых значений**
+- `extends` = “ограничить K этим набором”
+
+---
+
+### Пример:
+
+```typescript
+type User = { name: string; age: number };
+
+type K = keyof User;
+// "name" | "age"
+```
+
+Если не использовать `extends`, TS не понимает:
+
+- что K должен быть частью User
+- и теряется связь между key → value
+
+---
+
+### Простая формула:
+
+> `K extends keyof T` = “K должен быть одним из ключей T”
+
+---
+
+## 5. `in` в дженериках `<T, K in keyof T>`
+
+Это используется в **mapped types**.
+
+---
+
+### Что делает `in`?
+
+`in` — это перебор ключей объекта.
+
+---
+
+### Пример:
+
+```typescript
+type Readonly<T> = {
+  readonly [K in keyof T]: T[K];
+};
+```
+
+---
+
+### Разбор:
+
+```typescript
+K in keyof T
+```
+
+означает:
+
+> для каждого ключа K из T создать новое поле
+
+---
+
+### Пример работы:
+
+```typescript
+type User = {
+  name: string;
+  age: number;
+};
+
+type ReadonlyUser = Readonly<User>;
+```
+
+Результат:
+
+```typescript
+{
+  readonly name: string;
+  readonly age: number;
+}
+```
+
+---
+
+## 🔥 Ещё пример (очень важно)
+
+### Сделать все поля optional:
+
+```typescript
+type Partial<T> = {
+  [K in keyof T]?: T[K];
+};
+```
+
+---
+
+### Что происходит:
+
+| Часть     | Значение       |
+| --------- | -------------- |
+| `keyof T` | список ключей  |
+| `K in`    | перебор ключей |
+| `T[K]`    | тип значения   |
+
+---
+
+## 💡 Итог по `in`:
+
+> `in` = "пройтись по ключам объекта и создать новый тип"
+
+---
+
+## 🔥 Мини-шпаргалка
+
+| Конструкция         | Значение                     |
+| ------------------- | ---------------------------- |
+| `<T>`               | один универсальный тип       |
+| `<T = X>`           | значение по умолчанию        |
+| `<T, U>`            | несколько типов              |
+| `T extends U`       | ограничение типа             |
+| `K extends keyof T` | ключ объекта                 |
+| `K in keyof T`      | перебор ключей (mapped type) |
+
+---
+
 ## 1. Как создать дженерик?
 
 ### 1.1 Создание типа с дженериком через interface

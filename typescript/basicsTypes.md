@@ -5,20 +5,20 @@
 ### 1.1 Примитивные переменные
 
 ```typescript
-// ========== Простая типизация ==========
+//  Простая типизация
 let name: string = "Anna";
 let age: number = 25;
 let isAdmin: boolean = true;
 let id: symbol = Symbol("id");
 let bigNumber: bigint = 9007199254740991n;
 
-// ========== Общая типизация (Union Types) ==========
+//  Общая типизация (Union Types)
 // Переменная может быть одного из нескольких типов
 let value: number | string = 5;
 value = "asdasd"; // ✅ OK
 value = true; // ❌ Ошибка! Type 'boolean' is not assignable
 
-// ========== Узкая типизация (Literal Types) ==========
+//  Узкая типизация (Literal Types)
 // Переменная может принимать только конкретные значения
 let status: "success" | "error" | "loading" = "success";
 status = "error"; // ✅ OK
@@ -32,25 +32,25 @@ digit = 7; // ❌ Ошибка!
 ### 1.2 Массивы
 
 ```typescript
-// ========== Синтаксис 1: тип[] ==========
+//  Синтаксис 1: тип[]
 let numbers: number[] = [1, 2, 3];
 let names: string[] = ["Anna", "John"];
 let booleans: boolean[] = [true, false];
 
-// ========== Синтаксис 2: Array<тип> (Generic) ==========
+//  Синтаксис 2: Array<тип> (Generic)
 let numbers2: Array<number> = [1, 2, 3];
 let names2: Array<string> = ["Anna", "John"];
 
-// ========== Массивы с несколькими типами (Union) ==========
+//  Массивы с несколькими типами (Union)
 let mixed: (number | string)[] = [1, 2, "Anna", "John", 3];
 let mixed2: Array<number | string> = [1, "two", 3];
 
-// ========== Пустой массив ==========
+//  Пустой массив
 let empty: number[] = []; // ✅ OK
 empty.push(5); // ✅ OK
 empty.push("str"); // ❌ Ошибка!
 
-// ========== Readonly массив (неизменяемый) ==========
+//  Readonly массив (неизменяемый)
 let readonly: readonly number[] = [1, 2, 3];
 readonly.push(4); // ❌ Ошибка! Property 'push' does not exist
 ```
@@ -58,7 +58,7 @@ readonly.push(4); // ❌ Ошибка! Property 'push' does not exist
 ### 1.3 Объекты
 
 ```typescript
-// ========== Анонимный тип (прямое указание) ==========
+//  Анонимный тип (прямое указание)
 let user: {
   name: string;
   age: number;
@@ -69,7 +69,7 @@ let user: {
   // isStudent — можно не указывать
 };
 
-// ========== Через type (псевдоним типа) ==========
+//  Через type (псевдоним типа)
 type User = {
   name: string;
   age: number;
@@ -82,7 +82,7 @@ let user1: User = {
   email: "anna@example.com",
 };
 
-// ========== Через interface ==========
+//  Через interface
 interface IUser {
   name: string;
   age: number;
@@ -95,7 +95,7 @@ let user2: IUser = {
   email: "john@example.com",
 };
 
-// ========== Record<K, V> — тип для объектов с ключами типа K и значениями V ==========
+//  Record<K, V> — тип для объектов с ключами типа K и значениями V
 const obj1: Record<string, number> = {
   age: 25,
   height: 180,
@@ -106,7 +106,7 @@ const obj2: Record<number, boolean> = {
   6: false,
 };
 
-// ========== Индексная сигнатура ==========
+//  Индексная сигнатура
 const obj3: { [key: string]: number } = {
   age: 25,
   height: 180,
@@ -115,25 +115,551 @@ const obj3: { [key: string]: number } = {
 
 ---
 
+## 1. Как TypeScript реагирует на const и let?
+
+TypeScript по-разному выводит типы в зависимости от объявления переменной.
+
+### let — расширяющийся (widening) тип
+
+```ts
+let a = "hello";
+// тип: string (расширяется)
+```
+
+```ts
+let b = 5;
+// тип: number
+```
+
+👉 TS не фиксирует конкретное значение, только общий тип.
+
+---
+
+### const — узкий (literal) тип
+
+```ts
+const a = "hello";
+// тип: "hello" (литерал)
+```
+
+```ts
+const b = 5;
+// тип: 5
+```
+
+👉 значение становится **фиксированным типом**
+
+---
+
+### Объекты с const
+
+```ts
+const user = {
+  name: "Anna",
+};
+```
+
+Тип:
+
+```ts
+{
+  name: string;
+}
+```
+
+👉 значения внутри объектов **не становятся literal автоматически**
+
+---
+
+### Фиксация через as const
+
+```ts
+const user = {
+  name: "Anna",
+} as const;
+```
+
+Тип:
+
+```ts
+{
+  readonly name: "Anna";
+}
+```
+
+---
+
+## 2. Разница между object и Object в TypeScript
+
+### object (рекомендуется)
+
+```ts
+let a: object;
+```
+
+👉 означает **любой не-примитив**
+
+✔ подходит для объектов
+❌ не гарантирует структуру
+
+```ts
+a = { name: "Anna" }; // OK
+a = []; // OK
+a = 123; // ❌ ошибка
+```
+
+---
+
+### Object (почти не используют)
+
+```ts
+let b: Object;
+```
+
+👉 включает ВСЁ, кроме `null` и `undefined`
+
+```ts
+b = 123; // OK
+b = "text"; // OK
+b = {}; // OK
+```
+
+❌ бесполезен в типизации
+
+---
+
+### Итог
+
+- `object` → только реальные объекты
+- `Object` → почти всё → не использовать
+
+---
+
+## 3. Как работает typeof в TypeScript?
+
+`typeof` в TS используется для **сужения типов (type narrowing)**
+
+---
+
+### Пример
+
+```ts
+function print(value: string | number) {
+  if (typeof value === "string") {
+    value.toUpperCase(); // string
+  }
+
+  if (typeof value === "number") {
+    value.toFixed(); // number
+  }
+}
+```
+
+---
+
+### Важные особенности
+
+```ts
+typeof value === "string";
+typeof value === "number";
+typeof value === "boolean";
+typeof value === "object";
+typeof value === "undefined";
+typeof value === "function";
+```
+
+---
+
+### Отличие JS и TS
+
+- JS → runtime оператор
+- TS → помогает сузить тип
+
+---
+
+## 4. Conditional Types (условные типы)
+
+Это **условия в типах (как тернарный оператор)**
+
+---
+
+### Синтаксис
+
+```ts
+T extends U ? X : Y
+```
+
+---
+
+### Пример
+
+```ts
+type IsString<T> = T extends string ? true : false;
+
+type A = IsString<string>; // true
+type B = IsString<number>; // false
+```
+
+---
+
+### Практический пример
+
+```ts
+type ToArray<T> = T extends any ? T[] : never;
+
+type A = ToArray<string>; // string[]
+```
+
+---
+
+## 5. Utility Types (встроенные утилиты)
+
+---
+
+### Основные:
+
+```ts
+Partial<T>;
+Required<T>;
+Readonly<T>;
+Pick<T, K>;
+Omit<T, K>;
+Record<K, V>;
+```
+
+---
+
+### Примеры:
+
+```ts
+type User = {
+  name: string;
+  age: number;
+};
+```
+
+---
+
+### Partial
+
+```ts
+type PartialUser = Partial<User>;
+```
+
+→ все поля становятся optional
+
+---
+
+### Required
+
+```ts
+type RequiredUser = Required<User>;
+```
+
+→ все поля обязательны
+
+---
+
+### Pick
+
+```ts
+type NameOnly = Pick<User, "name">;
+```
+
+→ только name
+
+---
+
+### Omit
+
+```ts
+type WithoutAge = Omit<User, "age">;
+```
+
+→ убираем age
+
+---
+
+### Record
+
+```ts
+type Roles = Record<string, number>;
+```
+
+→ объект ключ → значение
+
+---
+
+## 6. Ключевое слово in в TypeScript
+
+Используется для **mapped types (перебор ключей)**
+
+---
+
+### Пример
+
+```ts
+type User = {
+  name: string;
+  age: number;
+};
+
+type ReadOnlyUser = {
+  [K in keyof User]: User[K];
+};
+```
+
+---
+
+### Добавление readonly
+
+```ts
+type ReadOnly<T> = {
+  readonly [K in keyof T]: T[K];
+};
+```
+
+---
+
+👉 `in` = перебор ключей объекта
+
+---
+
+## 7. infer — вывод типов внутри generics
+
+`infer` позволяет **вытащить тип внутри другого типа**
+
+---
+
+### Пример: извлечь return type
+
+```ts
+type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+```
+
+---
+
+### Использование
+
+```ts
+type Result = MyReturnType<() => number>; // number
+```
+
+---
+
+### Пример с массивом
+
+```ts
+type ElementType<T> = T extends (infer U)[] ? U : never;
+
+type A = ElementType<string[]>; // string
+```
+
+---
+
+## 8. Ключевое слово is (type predicate)
+
+Используется для **кастомных проверок типов**
+
+---
+
+### Пример
+
+```ts
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+```
+
+---
+
+### Использование
+
+```ts
+function print(value: unknown) {
+  if (isString(value)) {
+    value.toUpperCase(); // string
+  }
+}
+```
+
+---
+
+👉 позволяет TypeScript понять тип после проверки
+
+---
+
+## 9. Минусы TypeScript
+
+---
+
+### 1. Усложнение разработки
+
+- больше кода
+- больше типов
+
+---
+
+### 2. Более долгий старт
+
+- нужно настраивать конфиги
+- типизировать всё
+
+---
+
+### 3. Не защищает runtime
+
+```ts
+const user: any = JSON.parse(data);
+// TS думает что всё ок, но runtime может упасть
+```
+
+---
+
+### 4. Ошибки типизации могут быть сложными
+
+- длинные ошибки
+- сложно читать generics
+
+---
+
+### 5. Не всегда подходит для маленьких проектов
+
+---
+
+## 10. Что будет при двух одинаковых интерфейсах?
+
+TypeScript поддерживает **declaration merging**
+
+---
+
+### Пример
+
+```ts
+interface User {
+  name: string;
+}
+
+interface User {
+  age: number;
+}
+```
+
+---
+
+### Результат:
+
+```ts
+interface User {
+  name: string;
+  age: number;
+}
+```
+
+---
+
+👉 интерфейсы **сливаются**
+
+---
+
+### Важно
+
+```ts
+type User = {};
+type User = {};
+```
+
+❌ ошибка — type нельзя переопределять
+
+---
+
+## 11. Enum в TypeScript и как его заменить
+
+---
+
+### Enum
+
+```ts
+enum Role {
+  Admin,
+  User,
+  Guest,
+}
+```
+
+---
+
+### String Enum (лучше)
+
+```ts
+enum Role {
+  Admin = "ADMIN",
+  User = "USER",
+}
+```
+
+---
+
+## Проблемы enum
+
+- добавляет runtime код
+- хуже tree-shaking
+- иногда избыточен
+
+---
+
+## Альтернатива (лучший способ)
+
+### Union Types
+
+```ts
+type Role = "ADMIN" | "USER" | "GUEST";
+```
+
+---
+
+### Const object
+
+```ts
+const Role = {
+  Admin: "ADMIN",
+  User: "USER",
+} as const;
+
+type Role = (typeof Role)[keyof typeof Role];
+```
+
+---
+
+### Итог
+
+| Способ       | Рекомендация          |
+| ------------ | --------------------- |
+| enum         | ❌ редко использовать |
+| union        | ✅ лучший вариант     |
+| const object | ✅ гибкая замена enum |
+
+---
+
 ## 2. Как типизировать функции?
 
 ### 2.1 Типизация параметров и возвращаемого значения
 
 ```typescript
-// ========== Базовая типизация функции ==========
+//  Базовая типизация функции
 // Параметры: (a: number, b: number)
 // Возвращаемое значение: : number
 function sum(a: number, b: number): number {
   return a + b;
 }
 
-// ========== Если функция ничего не возвращает ==========
+//  Если функция ничего не возвращает
 function logMessage(message: string): void {
   console.log(message);
   // return не нужен (или return;)
 }
 
-// ========== Опциональные параметры (?) ==========
+//  Опциональные параметры (?)
 function greet(name: string, age?: number): string {
   if (age) {
     return `Привет, ${name}! Тебе ${age} лет.`;
@@ -144,14 +670,14 @@ function greet(name: string, age?: number): string {
 console.log(greet("Anna")); // "Привет, Anna!"
 console.log(greet("Anna", 25)); // "Привет, Anna! Тебе 25 лет."
 
-// ========== Параметры по умолчанию ==========
+//  Параметры по умолчанию
 function multiply(a: number, b: number = 2): number {
   return a * b;
 }
 console.log(multiply(5)); // 10 (b = 2 по умолчанию)
 console.log(multiply(5, 3)); // 15
 
-// ========== Rest параметры ==========
+//  Rest параметры
 function sumAll(...numbers: number[]): number {
   return numbers.reduce((acc, num) => acc + num, 0);
 }
@@ -161,15 +687,15 @@ console.log(sumAll(1, 2, 3, 4)); // 10
 ### 2.2 Типизация стрелочных функций
 
 ```typescript
-// ========== Полная типизация стрелочной функции ==========
+//  Полная типизация стрелочной функции
 const sumArrow: (a: number, b: number) => number = (a, b) => {
   return a + b;
 };
 
-// ========== Сокращённая запись (вывод типов) ==========
+//  Сокращённая запись (вывод типов)
 const sumArrow2 = (a: number, b: number): number => a + b;
 
-// ========== Типизация колбэков ==========
+//  Типизация колбэков
 function processArray(arr: number[], callback: (item: number, index: number) => void): void {
   arr.forEach((item, index) => callback(item, index));
 }
@@ -182,14 +708,14 @@ processArray([1, 2, 3], (item, index) => {
 ### 2.3 Типизация функции как типа (Function Type)
 
 ```typescript
-// ========== Объявление типа функции ==========
+//  Объявление типа функции
 type MathOperation = (a: number, b: number) => number;
 
 const add: MathOperation = (a, b) => a + b;
 const subtract: MathOperation = (a, b) => a - b;
 const multiply2: MathOperation = (a, b) => a * b;
 
-// ========== Тип функции с несколькими вариантами (overload) ==========
+//  Тип функции с несколькими вариантами (overload)
 // Перегрузка функции — несколько сигнатур вызова
 function process(value: string): string;
 function process(value: number): number;
@@ -253,7 +779,7 @@ if (typeof data === "number") {
   console.log(data * 2); // ✅ OK
 }
 
-// ========== Реальный пример: парсинг JSON ==========
+//  Реальный пример: парсинг JSON
 function parseJSON(jsonString: string): unknown {
   return JSON.parse(jsonString);
 }
@@ -312,7 +838,7 @@ function infiniteLoop(): never {
   }
 }
 
-// ========== never в exhaustive проверках ==========
+//  never в exhaustive проверках
 type Shape = "circle" | "square";
 
 function getArea(shape: Shape, size: number): number {
@@ -328,7 +854,7 @@ function getArea(shape: Shape, size: number): number {
   }
 }
 
-// ========== never vs void ==========
+//  never vs void
 // void: функция завершается, но ничего не возвращает
 // never: функция НИКОГДА не завершается (ошибка или бесконечность)
 ```
@@ -338,7 +864,7 @@ function getArea(shape: Shape, size: number): number {
 ## 4. Type vs Interface
 
 ```typescript
-// ========== type (псевдоним типа) ==========
+//  type (псевдоним типа)
 type TUser = {
   name: string;
   age: number;
@@ -352,7 +878,7 @@ type ID = string | number;
 // Кортеж (tuple) — только у type
 type Point = [number, number];
 
-// ========== interface ==========
+//  interface
 interface IUser {
   name: string;
   age: number;
@@ -364,7 +890,7 @@ interface IAdmin extends IUser {
   permissions: string[];
 }
 
-// ========== Ключевые отличия ==========
+//  Ключевые отличия
 // 1. interface можно расширять (declaration merging)
 interface IUser {
   phone?: string; // Добавляем поле в существующий интерфейс
@@ -377,7 +903,7 @@ interface IUser {
 type Nullable<T> = T | null;
 type Readonly<T> = { readonly [P in keyof T]: T[P] };
 
-// ========== Что использовать? ==========
+//  Что использовать?
 // - Интерфейсы (interface) для объектов, классов, API
 // - Типы (type) для union, кортежей, утилит
 ```

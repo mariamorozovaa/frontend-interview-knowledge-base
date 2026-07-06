@@ -265,6 +265,374 @@ function animate() {
 // animate(); // выполняется ~60 раз в секунду
 ```
 
+# Event Loop, Promise, Async/Await in JavaScript
+
+## Теория (вопросы и ответы)
+
+---
+
+## 1. Что такое Event Loop?
+
+Event Loop — это **механизм в JavaScript, который управляет выполнением кода, очередями задач и Call Stack**.
+
+JavaScript однопоточный, поэтому Event Loop обеспечивает «псевдоасинхронность».
+
+---
+
+### Как работает:
+
+```text
+
+1. Выполняется весь синхронный код (Call Stack)
+
+2. Выполняются ВСЕ микротаски
+
+3. Выполняется ОДНА макротаска
+
+4. Повтор
+
+```
+
+---
+
+### Пример:
+
+```js id="e1"
+console.log("1");
+
+setTimeout(() => console.log("2"), 0);
+
+Promise.resolve().then(() => console.log("3"));
+
+console.log("4");
+
+// 1, 4, 3, 2
+```
+
+---
+
+## 2. Что такое Web API в Event Loop?
+
+Web API — это **возможности браузера, которые не являются частью JS**.
+
+---
+
+### Примеры:
+
+- setTimeout / setInterval
+
+- fetch
+
+- DOM события
+
+- localStorage
+
+- MutationObserver
+
+---
+
+### Как работает:
+
+```js id="e2"
+setTimeout(() => console.log("timer"), 1000);
+```
+
+1. JS передаёт задачу в Web API
+2. Web API ждёт
+3. После — отправляет в очередь макротасок
+4. Event Loop забирает и выполняет
+
+---
+
+## 3. Микро и макротаски
+
+---
+
+### Микротаски (Microtasks)
+
+Выполняются **ВСЕГДА сразу после синхронного кода**.
+
+Примеры:
+
+- Promise.then
+
+- queueMicrotask
+
+- MutationObserver
+
+---
+
+### Макротаски (Macrotasks)
+
+Выполняются **по одной за цикл Event Loop**.
+
+Примеры:
+
+- setTimeout
+
+- setInterval
+
+- DOM events
+
+- fetch callbacks
+
+---
+
+### Порядок:
+
+```text
+
+Sync → Microtasks → Macrotask → Render
+
+```
+
+---
+
+## 4. Асинхронность и синхронность
+
+---
+
+### Синхронность
+
+Код выполняется **последовательно**, блокируя поток.
+
+```js id="e3"
+console.log(1);
+
+console.log(2);
+```
+
+---
+
+### Асинхронность
+
+Код выполняется **не сразу**, а позже через Event Loop.
+
+```js id="e4"
+setTimeout(() => console.log(2), 0);
+
+console.log(1);
+```
+
+---
+
+## 5. Что такое Promise?
+
+Promise — это объект, который представляет **результат асинхронной операции**.
+
+---
+
+### Состояния:
+
+- pending
+
+- fulfilled
+
+- rejected
+
+---
+
+### Пример:
+
+```js id="e5"
+const p = new Promise((resolve, reject) => {
+  resolve("OK");
+});
+```
+
+---
+
+## 6. Что возвращает setTimeout?
+
+```js id="e6"
+const id = setTimeout(() => {}, 1000);
+```
+
+Возвращает:
+
+- числовой ID таймера (в браузере)
+
+- используется для clearTimeout
+
+---
+
+## 7. Как работает .then().then()?
+
+---
+
+Каждый `.then`:
+
+- получает результат предыдущего
+
+- возвращает новый Promise
+
+---
+
+### Пример:
+
+```js id="e7"
+Promise.resolve(1)
+
+  .then((x) => x + 1)
+
+  .then((x) => x + 1)
+
+  .then(console.log); // 3
+```
+
+---
+
+### Если return нет:
+
+возвращается `undefined`
+
+---
+
+## 8. Двойной .then() — разбор
+
+```js id="e8"
+Promise.resolve()
+
+  .then(() => {
+    console.log(1);
+
+    return 2;
+  })
+
+  .then((x) => {
+    console.log(x);
+  });
+
+// 1 → 2
+```
+
+---
+
+## 9. Как работает async/await?
+
+---
+
+### async
+
+Функция всегда возвращает Promise.
+
+---
+
+### await
+
+- останавливает выполнение внутри async
+
+- ждёт Promise
+
+---
+
+### Пример:
+
+```js id="e9"
+async function test() {
+  console.log("A");
+
+  await Promise.resolve();
+
+  console.log("B");
+}
+
+test();
+
+console.log("C");
+
+// A, C, B
+```
+
+---
+
+## 10. Что если не обработать Promise.reject?
+
+---
+
+Если нет `.catch`:
+
+- появляется Unhandled Promise Rejection
+
+- в Node.js может завершить процесс
+
+- в браузере — warning в консоли
+
+---
+
+## 11. Рекурсия микротасок и макротасок
+
+---
+
+### Микротаски (опасно)
+
+```js id="e10"
+function loop() {
+  queueMicrotask(loop);
+}
+```
+
+❌ блокирует Event Loop полностью
+
+---
+
+### Макротаски (безопаснее)
+
+```js id="e11"
+function loop() {
+  setTimeout(loop, 0);
+}
+```
+
+✔ Event Loop остаётся живым
+
+---
+
+### Обычная рекурсия
+
+```js id="e12"
+function f() {
+  f();
+}
+```
+
+→ переполнение Call Stack
+
+---
+
+## 12. Бесконечен ли Call Stack?
+
+---
+
+❌ Нет.
+
+У него есть ограничение памяти.
+
+---
+
+### Итог:
+
+```text
+
+Call Stack → ограничен
+
+Event Loop → бесконечен
+
+```
+
+---
+
+## Что сказать на собеседовании
+
+Event Loop — это механизм, который управляет выполнением синхронного и асинхронного кода в JavaScript.
+Асинхронность реализуется через Web API и очереди микротасок и макротасок.
+Микротаски выполняются полностью перед макротасками.
+Promise — это объект, представляющий результат асинхронной операции.
+async/await — синтаксический сахар над Promise, который делает асинхронный код синхронным по виду.
+setTimeout возвращает ID таймера.
+Promise.reject без обработки приводит к необработанной ошибке.
+Call Stack ограничен, а Event Loop работает бесконечно.
+
 ### 13. Как работает fetch?
 
 ```js
